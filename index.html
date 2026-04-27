@@ -345,6 +345,18 @@
             margin-bottom: 5px;
             display: block;
         }
+
+        /* Police spéciale pour le compteur d'élèves dans le header */
+        .total-students-counter {
+            font-family: 'Courier New', 'Monaco', monospace;
+            font-size: 1.3rem;
+            font-weight: bold;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 30px;
+            letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+        }
     </style>
 </head>
 <body>
@@ -418,9 +430,12 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
         <div class="container">
             <a class="navbar-brand fw-bold" href="#">DESIGNATEUR DU PROF PLATENY 🇧🇯</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <div class="d-flex align-items-center">
+                <span class="total-students-counter me-3" id="headerTotalStudents">📊 Total: 0</span>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
@@ -532,6 +547,20 @@
         
         const SECRET_CODE = "11984";
         
+        // Fonction pour mettre à jour l'affichage du total des élèves dans le header
+        function updateHeaderTotalStudents() {
+            let totalStudents = 0;
+            for (let className in appData.classes) {
+                if (appData.classes[className] && appData.classes[className].students) {
+                    totalStudents += appData.classes[className].students.length;
+                }
+            }
+            const headerSpan = document.getElementById('headerTotalStudents');
+            if (headerSpan) {
+                headerSpan.innerHTML = `📊 Total: ${totalStudents}`;
+            }
+        }
+        
         function updateDesignButtonState() {
             const designButton = document.getElementById('designButton');
             if (!currentClass || currentClass.students.length === 0) {
@@ -600,6 +629,7 @@
                 localStorage.setItem('designateur_data', JSON.stringify(appData));
                 renderClassesList();
                 updateClassDropdown();
+                updateHeaderTotalStudents();
                 if (currentClass && currentClassName === pendingDeleteClassName) {
                     currentClass = null;
                     currentClassName = null;
@@ -627,6 +657,7 @@
                     updateUI();
                     localStorage.setItem('designateur_data', JSON.stringify(appData));
                     updateDesignButtonState();
+                    updateHeaderTotalStudents();
                     if (currentClass.students.length > 0) {
                         renderStudentModal();
                     } else {
@@ -904,6 +935,7 @@
             renderStudentModal();
             updateClassDropdown();
             updateDesignButtonState();
+            updateHeaderTotalStudents();
             document.getElementById('newStudentName').value = '';
             showSuccessOverlay('rgba(25, 135, 84, 0.85)');
         }
@@ -998,6 +1030,7 @@
                 fileInput.value = "";
                 renderClassesList();
                 updateClassDropdown();
+                updateHeaderTotalStudents();
             };
             reader.readAsArrayBuffer(fileInput.files[0]);
         }
@@ -1176,6 +1209,7 @@
         updateClassDropdown();
         renderClassesList();
         updateDesignButtonState();
+        updateHeaderTotalStudents();
         
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').catch(err => console.error('Erreur SW:', err));
