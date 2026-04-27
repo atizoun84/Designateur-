@@ -345,18 +345,6 @@
             margin-bottom: 5px;
             display: block;
         }
-
-        /* Police spéciale pour le compteur d'élèves dans le header */
-        .total-students-counter {
-            font-family: 'Courier New', 'Monaco', monospace;
-            font-size: 1.3rem;
-            font-weight: bold;
-            background: rgba(255,255,255,0.2);
-            padding: 5px 12px;
-            border-radius: 30px;
-            letter-spacing: 1px;
-            backdrop-filter: blur(4px);
-        }
     </style>
 </head>
 <body>
@@ -430,12 +418,9 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
         <div class="container">
             <a class="navbar-brand fw-bold" href="#">DESIGNATEUR DU PROF PLATENY 🇧🇯</a>
-            <div class="d-flex align-items-center">
-                <span class="total-students-counter me-3" id="headerTotalStudents">📊 Total: 0</span>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-            </div>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
@@ -443,6 +428,11 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" onclick="showView('config-view')">Configuration</a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link" style="background: rgba(255,255,255,0.2); border-radius: 20px; margin-left: 10px;">
+                            📊 Total: <strong id="totalStudentsHeader">0</strong> élève(s)
+                        </span>
                     </li>
                 </ul>
             </div>
@@ -547,17 +537,20 @@
         
         const SECRET_CODE = "11984";
         
-        // Fonction pour mettre à jour l'affichage du total des élèves dans le header
-        function updateHeaderTotalStudents() {
-            let totalStudents = 0;
+        // Fonction pour calculer et mettre à jour le total des élèves dans le header
+        function updateTotalStudentsHeader() {
+            let total = 0;
             for (let className in appData.classes) {
-                if (appData.classes[className] && appData.classes[className].students) {
-                    totalStudents += appData.classes[className].students.length;
-                }
+                total += appData.classes[className].students.length;
             }
-            const headerSpan = document.getElementById('headerTotalStudents');
-            if (headerSpan) {
-                headerSpan.innerHTML = `📊 Total: ${totalStudents}`;
+            const totalElement = document.getElementById('totalStudentsHeader');
+            if (totalElement) {
+                totalElement.innerText = total;
+                // Ajouter une petite animation de mise à jour
+                totalElement.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    if (totalElement) totalElement.style.transform = 'scale(1)';
+                }, 200);
             }
         }
         
@@ -629,7 +622,7 @@
                 localStorage.setItem('designateur_data', JSON.stringify(appData));
                 renderClassesList();
                 updateClassDropdown();
-                updateHeaderTotalStudents();
+                updateTotalStudentsHeader();
                 if (currentClass && currentClassName === pendingDeleteClassName) {
                     currentClass = null;
                     currentClassName = null;
@@ -657,7 +650,7 @@
                     updateUI();
                     localStorage.setItem('designateur_data', JSON.stringify(appData));
                     updateDesignButtonState();
-                    updateHeaderTotalStudents();
+                    updateTotalStudentsHeader();
                     if (currentClass.students.length > 0) {
                         renderStudentModal();
                     } else {
@@ -935,7 +928,7 @@
             renderStudentModal();
             updateClassDropdown();
             updateDesignButtonState();
-            updateHeaderTotalStudents();
+            updateTotalStudentsHeader();
             document.getElementById('newStudentName').value = '';
             showSuccessOverlay('rgba(25, 135, 84, 0.85)');
         }
@@ -1030,7 +1023,7 @@
                 fileInput.value = "";
                 renderClassesList();
                 updateClassDropdown();
-                updateHeaderTotalStudents();
+                updateTotalStudentsHeader();
             };
             reader.readAsArrayBuffer(fileInput.files[0]);
         }
@@ -1048,6 +1041,7 @@
                         <button class="btn btn-danger btn-sm" onclick="deleteClassWithConfirm('${escapeHtml(name).replace(/'/g, "\\'")}')">Supprimer</button>
                     </li>`;
             }
+            updateTotalStudentsHeader();
         }
         
         function selectAndViewStudents(className) {
@@ -1209,7 +1203,7 @@
         updateClassDropdown();
         renderClassesList();
         updateDesignButtonState();
-        updateHeaderTotalStudents();
+        updateTotalStudentsHeader();
         
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').catch(err => console.error('Erreur SW:', err));
