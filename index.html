@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0d6efd">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -37,6 +36,11 @@
             transition: transform 0.2s;
         }
         .btn-design:active { transform: scale(0.95); }
+        .btn-design:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
         
         .result-box {
             border: 4px solid var(--primary-color);
@@ -194,7 +198,7 @@
             margin-top: 10px;
         }
         
-        /* Modal de confirmation sans affichage du code */
+        /* Modal de confirmation */
         .secret-confirm-modal {
             position: fixed;
             top: 0;
@@ -223,6 +227,124 @@
             letter-spacing: 5px;
             font-family: monospace;
         }
+        
+        /* Modal Élèves élégante */
+        .student-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10003;
+        }
+        
+        .student-modal-content {
+            background: white;
+            border-radius: 25px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow: hidden;
+            animation: modalAppear 0.3s ease-out;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .student-modal-header {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .student-modal-body {
+            padding: 25px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .stats-cards {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        
+        .student-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            transition: background 0.2s;
+        }
+        
+        .student-list-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .student-info {
+            flex: 1;
+        }
+        
+        .student-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .student-sex {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .student-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-icon {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+        
+        .add-student-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -230,11 +352,10 @@
     <div id="success-overlay">
         <div class="text-center">
             <div class="display-1">✅</div>
-            <h2 class="fw-bold">Classe enregistrée avec succès !</h2>
+            <h2 class="fw-bold">Action effectuée avec succès !</h2>
         </div>
     </div>
     
-    <!-- Modal d'appréciation -->
     <div id="appreciationModal" class="appreciation-modal">
         <div class="appreciation-content">
             <h3 id="modalStudentName" class="mb-3"></h3>
@@ -248,7 +369,6 @@
         </div>
     </div>
     
-    <!-- Modal de confirmation secrète -->
     <div id="secretConfirmModal" class="secret-confirm-modal">
         <div class="secret-confirm-content">
             <h3 class="mb-3">⚠️ Action irréversible</h3>
@@ -260,10 +380,44 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modal Élèves élégante -->
+    <div id="studentModal" class="student-modal">
+        <div class="student-modal-content">
+            <div class="student-modal-header">
+                <h4 class="mb-0" id="studentModalTitle">Gestion des élèves</h4>
+                <button class="btn-close btn-close-white" onclick="closeStudentModal()"></button>
+            </div>
+            <div class="student-modal-body">
+                <div id="statsContainer" class="stats-cards"></div>
+                
+                <div class="add-student-form">
+                    <h6 class="mb-3">➕ Ajouter un élève</h6>
+                    <div class="row">
+                        <div class="col-md-7">
+                            <input type="text" id="newStudentName" class="form-control" placeholder="Nom et Prénoms">
+                        </div>
+                        <div class="col-md-3">
+                            <select id="newStudentSexe" class="form-select">
+                                <option value="M">Masculin (M)</option>
+                                <option value="F">Féminin (F)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary w-100" onclick="addNewStudent()">Ajouter</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <h6 class="mb-3">📋 Liste des élèves</h6>
+                <div id="studentsListContainer"></div>
+            </div>
+        </div>
+    </div>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#">DESIGNATEUR 🇧🇯</a>
+            <a class="navbar-brand fw-bold" href="#">DESIGNATEUR DU PROF PLATENY 🇧🇯</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -318,13 +472,13 @@
                         </div>
                     </div>
 
-                    <button onclick="pickStudent()" id="designButton" class="btn btn-success btn-design shadow mb-4">
+                    <button onclick="pickStudent()" id="designButton" class="btn btn-success btn-design shadow mb-4" disabled>
                         Désigner un élève
                     </button>
 
                     <div class="d-flex gap-2 justify-content-center">
                         <button class="btn btn-outline-warning btn-sm" onclick="resetSession()">Réinitialiser Session</button>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="openSecretModal()">Vider l'historique</button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="openSecretModal('clearHistory')">Vider l'historique</button>
                     </div>
                 </div>
             </div>
@@ -367,43 +521,53 @@
         // --- LOGIQUE SPA ET DONNÉES ---
         let appData = JSON.parse(localStorage.getItem('designateur_data')) || { classes: {} };
         let currentClass = null;
+        let currentClassName = null;
         let pool = [];
         let isPicking = false;
         let audioContext = null;
         let tickInterval = null;
         let currentSelectedStudent = null;
-        let pendingAction = null; // Stocke l'action à confirmer
+        let pendingAction = null;
+        let pendingStudentAction = null;
         
-        // Code secret (non affiché)
         const SECRET_CODE = "11984";
         
-        // Initialiser l'audio context
+        function updateDesignButtonState() {
+            const designButton = document.getElementById('designButton');
+            if (!currentClass || currentClass.students.length === 0) {
+                designButton.disabled = true;
+            } else {
+                designButton.disabled = false;
+            }
+        }
+        
         function initAudio() {
             if (!audioContext && window.AudioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
         }
         
-        // Ouvrir la modal secrète
-        function openSecretModal() {
+        function openSecretModal(action) {
+            pendingAction = action;
             document.getElementById('secretConfirmModal').style.display = 'flex';
             document.getElementById('secretCodeInput').value = '';
             document.getElementById('secretCodeInput').focus();
-            pendingAction = 'clearHistory';
         }
         
-        // Fermer la modal secrète
         function closeSecretModal() {
             document.getElementById('secretConfirmModal').style.display = 'none';
             pendingAction = null;
         }
         
-        // Valider le code secret
         function validateSecretCode() {
             const inputCode = document.getElementById('secretCodeInput').value;
             if (inputCode === SECRET_CODE) {
                 if (pendingAction === 'clearHistory') {
                     executeClearHistory();
+                } else if (pendingAction === 'deleteClass') {
+                    executeDeleteClass();
+                } else if (pendingAction === 'deleteStudent') {
+                    executeDeleteStudent();
                 }
                 closeSecretModal();
             } else {
@@ -412,7 +576,6 @@
             }
         }
         
-        // Exécuter la suppression de l'historique
         function executeClearHistory() {
             if(currentClass) {
                 currentClass.history = [];
@@ -423,44 +586,86 @@
                 localStorage.setItem('designateur_data', JSON.stringify(appData));
                 updateUI();
                 document.getElementById('winner-name').innerText = "PRÊT ?";
+                document.getElementById('winner-name').style.color = '#0d6efd';
                 updateAppreciationBadge(null);
-                
-                // Notification
-                const overlay = document.getElementById('success-overlay');
-                overlay.style.background = 'rgba(220, 53, 69, 0.85)';
-                overlay.style.display = 'flex';
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    overlay.style.background = 'rgba(25, 135, 84, 0.85)';
-                }, 1500);
+                showSuccessOverlay('rgba(220, 53, 69, 0.85)');
             }
         }
         
-        // Jouer le son de timbale
+        let pendingDeleteClassName = null;
+        
+        function executeDeleteClass() {
+            if (pendingDeleteClassName) {
+                delete appData.classes[pendingDeleteClassName];
+                localStorage.setItem('designateur_data', JSON.stringify(appData));
+                renderClassesList();
+                updateClassDropdown();
+                if (currentClass && currentClassName === pendingDeleteClassName) {
+                    currentClass = null;
+                    currentClassName = null;
+                    pool = [];
+                    document.getElementById('winner-name').innerText = "PRÊT ?";
+                    document.getElementById('winner-name').style.color = '#0d6efd';
+                    document.getElementById('winner-count').innerText = "";
+                    updateAppreciationBadge(null);
+                    updateUI();
+                    updateDesignButtonState();
+                }
+                showSuccessOverlay('rgba(220, 53, 69, 0.85)');
+                pendingDeleteClassName = null;
+            }
+        }
+        
+        let pendingStudentDelete = null;
+        
+        function executeDeleteStudent() {
+            if (pendingStudentDelete && currentClass) {
+                const index = currentClass.students.findIndex(s => s.name === pendingStudentDelete);
+                if (index !== -1) {
+                    currentClass.students.splice(index, 1);
+                    resetPool();
+                    updateUI();
+                    localStorage.setItem('designateur_data', JSON.stringify(appData));
+                    updateDesignButtonState();
+                    if (currentClass.students.length > 0) {
+                        renderStudentModal();
+                    } else {
+                        closeStudentModal();
+                    }
+                    showSuccessOverlay('rgba(220, 53, 69, 0.85)');
+                }
+                pendingStudentDelete = null;
+            }
+        }
+        
+        function showSuccessOverlay(color) {
+            const overlay = document.getElementById('success-overlay');
+            overlay.style.background = color || 'rgba(25, 135, 84, 0.85)';
+            overlay.style.display = 'flex';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                overlay.style.background = 'rgba(25, 135, 84, 0.85)';
+            }, 1500);
+        }
+        
         function playTimpaniSound() {
             if (!audioContext) return;
-            
             const gainNode = audioContext.createGain();
             gainNode.gain.value = 0.6;
             gainNode.connect(audioContext.destination);
-            
             const osc1 = audioContext.createOscillator();
             osc1.type = 'sine';
             osc1.frequency.value = 80;
             osc1.connect(gainNode);
-            
             const osc2 = audioContext.createOscillator();
             osc2.type = 'sine';
             osc2.frequency.value = 120;
             osc2.connect(gainNode);
-            
             osc1.start();
             osc2.start();
-            
             gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.8);
             osc1.stop(audioContext.currentTime + 0.8);
             osc2.stop(audioContext.currentTime + 0.8);
-            
             for(let i = 0; i < 2; i++) {
                 setTimeout(() => {
                     const wave = document.createElement('div');
@@ -474,28 +679,22 @@
         
         function playTickSound() {
             if (!audioContext) return;
-            
             const gainNode = audioContext.createGain();
             gainNode.gain.value = 0.4;
             gainNode.connect(audioContext.destination);
-            
             const oscillator = audioContext.createOscillator();
             oscillator.type = 'sine';
             oscillator.frequency.value = 1200;
             oscillator.connect(gainNode);
-            
             const oscillator2 = audioContext.createOscillator();
             oscillator2.type = 'triangle';
             oscillator2.frequency.value = 600;
             oscillator2.connect(gainNode);
-            
             oscillator.start();
             oscillator2.start();
-            
             gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.05);
             oscillator.stop(audioContext.currentTime + 0.05);
             oscillator2.stop(audioContext.currentTime + 0.05);
-            
             const wave = document.createElement('div');
             wave.className = 'sound-wave';
             document.body.appendChild(wave);
@@ -504,28 +703,22 @@
         
         function playFinalSound() {
             if (!audioContext) return;
-            
             const gainNode = audioContext.createGain();
             gainNode.gain.value = 0.5;
             gainNode.connect(audioContext.destination);
-            
             const osc1 = audioContext.createOscillator();
             osc1.type = 'sine';
             osc1.frequency.value = 330;
             osc1.connect(gainNode);
-            
             const osc2 = audioContext.createOscillator();
             osc2.type = 'sine';
             osc2.frequency.value = 523.25;
             osc2.connect(gainNode);
-            
             osc1.start();
             osc2.start();
-            
             gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.3);
             osc1.stop(audioContext.currentTime + 0.3);
             osc2.stop(audioContext.currentTime + 0.3);
-            
             for(let i = 0; i < 3; i++) {
                 setTimeout(() => {
                     const wave = document.createElement('div');
@@ -608,26 +801,136 @@
                 if (!currentSelectedStudent.appreciations) currentSelectedStudent.appreciations = [];
                 currentSelectedStudent.appreciations.push(grade);
                 localStorage.setItem('designateur_data', JSON.stringify(appData));
-                
                 const wave = document.createElement('div');
                 wave.className = 'sound-wave';
                 wave.style.background = grade === 'mediocre' ? 'rgba(220,53,69,0.5)' : (grade === 'passable' ? 'rgba(253,126,20,0.5)' : 'rgba(25,135,84,0.5)');
                 document.body.appendChild(wave);
                 setTimeout(() => wave.remove(), 500);
-                
                 updateAppreciationBadge(currentSelectedStudent.name);
                 closeModal();
-                
-                const overlay = document.getElementById('success-overlay');
-                overlay.style.background = grade === 'mediocre' ? 'rgba(220,53,69,0.85)' : (grade === 'passable' ? 'rgba(253,126,20,0.85)' : 'rgba(25,135,84,0.85)');
-                overlay.style.display = 'flex';
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    overlay.style.background = 'rgba(25, 135, 84, 0.85)';
-                }, 1000);
+                showSuccessOverlay(grade === 'mediocre' ? 'rgba(220,53,69,0.85)' : (grade === 'passable' ? 'rgba(253,126,20,0.85)' : 'rgba(25,135,84,0.85)'));
             }
         }
-
+        
+        // Gestion des élèves
+        function openStudentModal() {
+            if (!currentClass) {
+                alert("Veuillez d'abord sélectionner une classe");
+                return;
+            }
+            renderStudentModal();
+            document.getElementById('studentModal').style.display = 'flex';
+        }
+        
+        function closeStudentModal() {
+            document.getElementById('studentModal').style.display = 'none';
+        }
+        
+        function renderStudentModal() {
+            if (!currentClass) return;
+            const students = currentClass.students;
+            const total = students.length;
+            const maleCount = students.filter(s => s.sexe === 'M').length;
+            const femaleCount = students.filter(s => s.sexe === 'F').length;
+            
+            document.getElementById('statsContainer').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${total}</div>
+                    <div>Total élèves</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color: #0d6efd;">${maleCount}</div>
+                    <div>Masculins (M)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color: #dc3545;">${femaleCount}</div>
+                    <div>Féminins (F)</div>
+                </div>
+            `;
+            
+            let studentsHtml = '';
+            students.forEach((student, index) => {
+                studentsHtml += `
+                    <div class="student-list-item">
+                        <div class="student-info">
+                            <div class="student-name">${escapeHtml(student.name)}</div>
+                            <div class="student-sex">Sexe: ${student.sexe === 'M' ? 'Masculin' : 'Féminin'}</div>
+                        </div>
+                        <div class="student-actions">
+                            <button class="btn btn-sm btn-outline-primary btn-icon" onclick="editStudent(${index})">✏️ Modifier</button>
+                            <button class="btn btn-sm btn-outline-danger btn-icon" onclick="deleteStudentWithConfirm('${escapeHtml(student.name).replace(/'/g, "\\'")}')">🗑️ Supprimer</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (students.length === 0) {
+                studentsHtml = '<div class="text-center text-muted py-4">Aucun élève dans cette classe</div>';
+            }
+            
+            document.getElementById('studentsListContainer').innerHTML = studentsHtml;
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        function addNewStudent() {
+            const name = document.getElementById('newStudentName').value.trim();
+            const sexe = document.getElementById('newStudentSexe').value;
+            if (!name) {
+                alert("Veuillez saisir un nom");
+                return;
+            }
+            if (currentClass.students.some(s => s.name === name)) {
+                alert("Cet élève existe déjà");
+                return;
+            }
+            currentClass.students.push({
+                name: name,
+                sexe: sexe,
+                count: 0,
+                appreciations: []
+            });
+            localStorage.setItem('designateur_data', JSON.stringify(appData));
+            resetPool();
+            updateUI();
+            renderStudentModal();
+            updateClassDropdown();
+            updateDesignButtonState();
+            document.getElementById('newStudentName').value = '';
+            showSuccessOverlay('rgba(25, 135, 84, 0.85)');
+        }
+        
+        function editStudent(index) {
+            const student = currentClass.students[index];
+            const newName = prompt("Modifier le nom de l'élève :", student.name);
+            if (newName && newName.trim()) {
+                if (newName.trim() !== student.name && currentClass.students.some(s => s.name === newName.trim())) {
+                    alert("Ce nom existe déjà");
+                    return;
+                }
+                student.name = newName.trim();
+                localStorage.setItem('designateur_data', JSON.stringify(appData));
+                resetPool();
+                updateUI();
+                renderStudentModal();
+                updateClassDropdown();
+                showSuccessOverlay('rgba(25, 135, 84, 0.85)');
+            }
+        }
+        
+        function deleteStudentWithConfirm(studentName) {
+            pendingStudentDelete = studentName;
+            openSecretModal('deleteStudent');
+        }
+        
         function showView(viewId) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
@@ -636,13 +939,13 @@
             if(viewId === 'config-view') renderClassesList();
             if(viewId === 'design-view') updateClassDropdown();
         }
-
+        
         function saveClass() {
             const name = document.getElementById('classNameInput').value.trim();
             const fileInput = document.getElementById('excelInput');
             if(!name) return alert("Veuillez saisir un nom de classe");
             if(!fileInput.files || fileInput.files.length === 0) return alert("Veuillez choisir un fichier Excel");
-
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
@@ -650,11 +953,10 @@
                 const firstSheetName = workbook.SheetNames[0];
                 const firstSheet = workbook.Sheets[firstSheetName];
                 const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
+                
                 const formattedStudents = jsonData.map(row => {
                     let nameField = null;
                     let sexeField = null;
-
                     if(row['Nom Prénoms'] !== undefined) nameField = row['Nom Prénoms'];
                     else if(row['Nom_Prenoms'] !== undefined) nameField = row['Nom_Prenoms'];
                     else if(row['NomPrenoms'] !== undefined) nameField = row['NomPrenoms'];
@@ -662,42 +964,24 @@
                     else {
                         const keys = Object.keys(row);
                         for(let k of keys) {
-                            if(k.toLowerCase().includes('nom') && k.toLowerCase().includes('prénom')) {
-                                nameField = row[k];
-                                break;
-                            } else if(k.toLowerCase().includes('nom') && k.toLowerCase().includes('prenom')) {
+                            if(k.toLowerCase().includes('nom') && (k.toLowerCase().includes('prénom') || k.toLowerCase().includes('prenom'))) {
                                 nameField = row[k];
                                 break;
                             }
                         }
                     }
-
                     if(row['sexe'] !== undefined) sexeField = row['sexe'];
                     else if(row['Sexe'] !== undefined) sexeField = row['Sexe'];
                     else if(row['SEXE'] !== undefined) sexeField = row['SEXE'];
                     else if(row['gender'] !== undefined) sexeField = row['gender'];
-                    else {
-                        const keys = Object.keys(row);
-                        for(let k of keys) {
-                            if(k.toLowerCase() === 'sexe') {
-                                sexeField = row[k];
-                                break;
-                            }
-                        }
-                    }
-
                     if(!nameField) return null;
-                    
                     let normalizedSexe = '';
                     if(sexeField) {
                         normalizedSexe = sexeField.toString().trim().toUpperCase();
-                        if(normalizedSexe === 'M' || normalizedSexe === 'F') {
-                            normalizedSexe = normalizedSexe;
-                        } else if(normalizedSexe === 'MASCULIN') normalizedSexe = 'M';
+                        if(normalizedSexe === 'M' || normalizedSexe === 'F') normalizedSexe = normalizedSexe;
+                        else if(normalizedSexe === 'MASCULIN') normalizedSexe = 'M';
                         else if(normalizedSexe === 'FÉMININ' || normalizedSexe === 'FEMININ') normalizedSexe = 'F';
-                        else normalizedSexe = sexeField.toString().trim();
                     }
-                    
                     return {
                         name: nameField.toString().trim(),
                         sexe: normalizedSexe,
@@ -705,99 +989,107 @@
                         appreciations: []
                     };
                 }).filter(s => s !== null && s.name !== "");
-
+                
                 if(formattedStudents.length === 0) return alert("Aucune donnée valide trouvée.");
-
-                appData.classes[name] = {
-                    students: formattedStudents,
-                    history: []
-                };
-                
+                appData.classes[name] = { students: formattedStudents, history: [] };
                 localStorage.setItem('designateur_data', JSON.stringify(appData));
-                
-                const overlay = document.getElementById('success-overlay');
-                overlay.style.display = 'flex';
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                }, 1500);
-
+                showSuccessOverlay('rgba(25, 135, 84, 0.85)');
                 document.getElementById('classNameInput').value = "";
                 fileInput.value = "";
-                
                 renderClassesList();
                 updateClassDropdown();
             };
             reader.readAsArrayBuffer(fileInput.files[0]);
         }
-
+        
         function renderClassesList() {
             const listEl = document.getElementById('classesDisplayList');
             listEl.innerHTML = "";
             for(let name in appData.classes) {
                 listEl.innerHTML += `
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        ${name} (${appData.classes[name].students.length} élèves)
-                        <button class="btn btn-danger btn-sm" onclick="deleteClass('${name}')">Supprimer</button>
+                        <div>
+                            <strong>${escapeHtml(name)}</strong> (${appData.classes[name].students.length} élèves)
+                            <button class="btn btn-sm btn-outline-info ms-2" onclick="selectAndViewStudents('${escapeHtml(name).replace(/'/g, "\\'")}')">📋 Voir élèves</button>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="deleteClassWithConfirm('${escapeHtml(name).replace(/'/g, "\\'")}')">Supprimer</button>
                     </li>`;
             }
         }
-
-        function deleteClass(name) {
-            if(confirm(`Supprimer la classe ${name} ?`)) {
-                delete appData.classes[name];
-                localStorage.setItem('designateur_data', JSON.stringify(appData));
-                renderClassesList();
-                updateClassDropdown();
-                if(currentClass && currentClass === appData.classes[name]) {
-                    currentClass = null;
-                    pool = [];
-                    document.getElementById('winner-name').innerText = "PRÊT ?";
-                    document.getElementById('winner-count').innerText = "";
-                    updateAppreciationBadge(null);
-                    updateUI();
-                }
-            }
+        
+        function selectAndViewStudents(className) {
+            currentClass = appData.classes[className];
+            currentClassName = className;
+            resetPool();
+            updateUI();
+            updateDesignButtonState();
+            openStudentModal();
+            document.getElementById('classSelect').value = className;
         }
-
+        
+        function deleteClassWithConfirm(className) {
+            pendingDeleteClassName = className;
+            openSecretModal('deleteClass');
+        }
+        
         function updateClassDropdown() {
             const select = document.getElementById('classSelect');
             select.innerHTML = '<option value="">-- Sélectionnez une Classe --</option>';
             for(let name in appData.classes) {
-                select.innerHTML += `<option value="${name}">${name}</option>`;
+                select.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
             }
         }
-
+        
         function loadClassData() {
             stopAllTicks();
             const className = document.getElementById('classSelect').value;
-            if(!className) return;
+            if(!className) {
+                currentClass = null;
+                currentClassName = null;
+                pool = [];
+                updateUI();
+                updateDesignButtonState();
+                document.getElementById('winner-name').innerText = "PRÊT ?";
+                document.getElementById('winner-name').style.color = '#0d6efd';
+                document.getElementById('winner-count').innerText = "";
+                updateAppreciationBadge(null);
+                return;
+            }
             currentClass = appData.classes[className];
+            currentClassName = className;
             if(currentClass) {
                 resetPool();
                 updateUI();
+                updateDesignButtonState();
                 if(currentClass.history && currentClass.history.length > 0) {
-                    document.getElementById('stat-last').innerText = currentClass.history[0];
-                    updateAppreciationBadge(currentClass.history[0]);
+                    const lastStudentName = currentClass.history[0];
+                    document.getElementById('stat-last').innerText = lastStudentName;
+                    updateAppreciationBadge(lastStudentName);
                 } else {
                     document.getElementById('stat-last').innerText = "-";
                     updateAppreciationBadge(null);
                 }
             }
         }
-
+        
         function resetPool() {
             if(!currentClass) return;
             pool = currentClass.students.map(s => s.name);
         }
-
+        
         function updateUI() {
-            if(!currentClass) return;
+            if(!currentClass) {
+                document.getElementById('stat-total').innerText = "0";
+                document.getElementById('stat-remaining').innerText = "0";
+                document.getElementById('stat-last').innerText = "-";
+                return;
+            }
             document.getElementById('stat-total').innerText = currentClass.students.length;
             document.getElementById('stat-remaining').innerText = pool.length;
             const lastStudent = (currentClass.history && currentClass.history.length) ? currentClass.history[0] : "-";
             document.getElementById('stat-last').innerText = lastStudent;
         }
-
+        
         async function pickStudent() {
             if(isPicking) return;
             if(!currentClass) return alert("Choisissez une classe d'abord");
@@ -828,9 +1120,7 @@
             tickInterval = setInterval(() => {
                 playTickSound();
                 tickCount++;
-                if (tickCount > maxScrolls + 3) {
-                    stopAllTicks();
-                }
+                if (tickCount > maxScrolls + 3) stopAllTicks();
             }, 45);
             
             const scrollIntervalId = setInterval(() => {
@@ -842,65 +1132,53 @@
                     scrollCount++;
                 } else {
                     clearInterval(scrollIntervalId);
-                    
                     const randomIndex = Math.floor(Math.random() * pool.length);
                     const selectedName = pool.splice(randomIndex, 1)[0];
-                    
                     winnerElement.innerText = selectedName;
                     winnerElement.classList.remove('name-scroll');
                     winnerElement.classList.add('winner-final');
-                    
+                    const student = currentClass.students.find(s => s.name === selectedName);
+                    if(student && student.sexe === 'F') winnerElement.style.color = '#dc3545';
+                    else winnerElement.style.color = '#0d6efd';
                     playTimpaniSound();
                     playFinalSound();
-                    
                     if(!currentClass.history) currentClass.history = [];
                     currentClass.history.unshift(selectedName);
-                    const student = currentClass.students.find(s => s.name === selectedName);
                     if(student) student.count++;
-                    
                     const genderTag = (student && student.sexe) ? ` (${student.sexe})` : "";
                     document.getElementById('winner-count').innerText = `Désigné ${student ? student.count : 0} fois${genderTag}`;
-                    
                     updateAppreciationBadge(selectedName);
-                    
                     localStorage.setItem('designateur_data', JSON.stringify(appData));
                     updateUI();
-                    
-                    setTimeout(() => {
-                        winnerElement.classList.remove('winner-final');
-                    }, 500);
-                    
+                    setTimeout(() => winnerElement.classList.remove('winner-final'), 500);
                     button.classList.remove('btn-design-loading');
-                    button.disabled = false;
+                    updateDesignButtonState();
                     isPicking = false;
                 }
             }, scrollInterval);
         }
-
+        
         function resetSession() {
             stopAllTicks();
             if(currentClass) {
                 resetPool();
-                if(currentClass.history && currentClass.history.length) {
-                    currentClass.history = [];
-                }
+                if(currentClass.history) currentClass.history = [];
                 updateUI();
                 document.getElementById('winner-name').innerText = "PRÊT ?";
+                document.getElementById('winner-name').style.color = '#0d6efd';
                 document.getElementById('winner-count').innerText = "";
                 updateAppreciationBadge(null);
                 localStorage.setItem('designateur_data', JSON.stringify(appData));
             }
         }
-
+        
         // Initialisation
         updateClassDropdown();
         renderClassesList();
+        updateDesignButtonState();
         
-        // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('Service Worker enregistré', reg))
-                .catch(err => console.error('Erreur SW:', err));
+            navigator.serviceWorker.register('/sw.js').catch(err => console.error('Erreur SW:', err));
         }
     </script>
 </body>
