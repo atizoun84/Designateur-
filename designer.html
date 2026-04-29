@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Désignation - Prof Plateny</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="dataManager.js"></script>
+    
+    <!-- PWA Meta & Links -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#375a7f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Designateur">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <style>
+        :root {
+            --primary-color: #375a7f;
+            --secondary-color: #00bc8c;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --bg-dark: #222222;
+            --card-dark: #303030;
+            --text-light: #ebebeb;
+        }
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-light);
+            padding-bottom: 80px; 
+        }
+        
+        .btn-design {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            box-shadow: 0 10px 20px rgba(0, 188, 140, 0.2);
+            transition: transform 0.2s;
+            border: 4px solid var(--secondary-color);
+        }
+        .btn-design:active { transform: scale(0.95); }
+        .btn-design:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        .result-box {
+            border: 4px solid var(--primary-color);
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            background: var(--card-dark);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .result-box:hover { transform: scale(1.02); border-color: var(--secondary-color); }
+
+        .text-muted { color: #aaaaaa !important; }
+        .bg-white { background-color: var(--card-dark) !important; color: var(--text-light) !important; }
+        .form-select { background-color: var(--card-dark); color: white; border-color: #444; }
+        .form-select:focus { background-color: #3d3d3d; color: white; }
+
+        @keyframes nameFlash {
+            0% { opacity: 0.3; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.3; transform: scale(0.95); }
+        }
+        .name-scroll { animation: nameFlash 0.05s ease-in-out; }
+        
+        @keyframes winnerAppear {
+            0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        .winner-final { animation: winnerAppear 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; color: var(--secondary-color) !important; }
+
+        .btn-design-loading { animation: buttonPulse 0.3s infinite; }
+        @keyframes buttonPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .appreciation-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none; justify-content: center;
+            align-items: center; z-index: 10001; backdrop-filter: blur(8px);
+        }
+        .appreciation-content {
+            background: var(--card-dark); border-radius: 24px; padding: 40px;
+            text-align: center; max-width: 450px; width: 90%;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            border: 1px solid #444;
+        }
+        .modal-title-custom { font-size: 1.8rem; font-weight: 800; color: var(--text-light); margin-bottom: 5px; }
+        .modal-subtitle { color: #aaaaaa; font-size: 0.9rem; margin-bottom: 25px; }
+        
+        .appreciation-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .app-btn { 
+            border: none; border-radius: 15px; padding: 15px 10px; 
+            font-weight: 700; color: white; transition: transform 0.2s, filter 0.2s;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+        }
+        .app-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
+        .app-btn span { font-size: 0.7rem; text-transform: uppercase; }
+        
+        .app-btn-mediocre { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .app-btn-moyen { background: linear-gradient(135deg, #f39c12, #d35400); }
+        .app-btn-excellent { background: linear-gradient(135deg, #00bc8c, #16a085); }
+        .app-btn-absent { background: #444; grid-column: span 3; color: #ccc; }
+
+        #success-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 188, 140, 0.85); display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; color: white;
+        }
+
+        .footer-credits {
+            margin-top: 20px; 
+            margin-bottom: 40px;
+            font-size: 0.85rem; 
+            color: #888; 
+            padding: 20px;
+            border-top: 1px solid #444;
+        }
+
+        .navbar { background-color: #1a1a1a !important; border-bottom: 1px solid #333; }
+        .navbar-nav .nav-link { color: #ccc !important; }
+        .navbar-nav .nav-link.active { color: var(--secondary-color) !important; font-weight: 700; }
+        
+        .badge.bg-white { color: var(--bg-dark) !important; background-color: var(--text-light) !important; }
+    </style>
+</head>
+<body>
+
+    <div id="success-overlay">
+        <div class="text-center">
+            <div class="display-1">✅</div>
+            <h2 class="fw-bold">Sauvegardé !</h2>
+        </div>
+    </div>
+
+    <div id="appreciationModal" class="appreciation-modal">
+        <div class="appreciation-content">
+            <div class="modal-title-custom" id="modalStudentName">NOM ÉLÈVE</div>
+            <div class="modal-subtitle" id="modalStudentInfo">Sexe: - | Désigné: 0 fois</div>
+            
+            <div class="appreciation-grid" id="appreciationGrid">
+                <button class="app-btn app-btn-mediocre" onclick="setAppreciation('mediocre')">
+                    <span>🔴</span> Médiocre
+                </button>
+                <button class="app-btn app-btn-moyen" onclick="setAppreciation('passable')">
+                    <span>🟠</span> Moyen
+                </button>
+                <button class="app-btn app-btn-excellent" onclick="setAppreciation('bien')">
+                    <span>🟢</span> Excellent
+                </button>
+                <button class="app-btn app-btn-absent" onclick="markAsAbsent()">
+                    ⚪ MARQUER COMME ABSENT POUR CE CYCLE
+                </button>
+            </div>
+            
+            <button onclick="closeModal()" class="btn btn-outline-light w-100 fw-bold" style="border-radius: 12px; border-color: #555;">Fermer</button>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand fw-bold mb-0" href="#" style="color: var(--secondary-color);">DESIGNATEUR 🇧🇯</a>
+            
+            <div class="d-flex align-items-center ms-auto">
+                <span class="badge bg-white p-2 me-2">
+                    📊 Total: <strong id="totalStudentsHeader">0</strong>
+                </span>
+                <span class="badge bg-danger p-2 me-3">
+                    🚫 Absents: <strong id="absentStudentsHeader">0</strong>
+                </span>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-3">
+                        <li class="nav-item"><a class="nav-link" href="index.html">Accueil</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="designer.html">Désignation</a></li>
+                        <li class="nav-item"><a class="nav-link" href="configuration.html">Configuration</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <select id="classSelect" class="form-select form-select-lg mb-4 shadow-sm" onchange="loadClassData()">
+                    <option value="">-- Choisissez la classe --</option>
+                </select>
+
+                <div class="d-flex justify-content-between mb-4">
+                    <div class="bg-white p-2 rounded shadow-sm flex-fill mx-1 border border-secondary" style="border-width: 2px !important;">
+                        <small class="text-muted d-block">Effectif Total</small>
+                        <strong id="stat-total" class="h5" style="color: var(--secondary-color);">0</strong>
+                    </div>
+                    <div class="bg-white p-2 rounded shadow-sm flex-fill mx-1 border border-danger" style="border-width: 2px !important;">
+                        <small class="text-muted d-block">Restants</small>
+                        <strong id="stat-remaining" class="h5 text-danger">0</strong>
+                    </div>
+                </div>
+
+                <div class="result-box mb-4 shadow-sm p-3" onclick="openAppreciationModal()">
+                    <div>
+                        <h2 id="winner-name" class="display-6 fw-bold text-white">PRÊT ?</h2>
+                        <p id="winner-count" class="text-muted mb-0"></p>
+                    </div>
+                </div>
+
+                <button onclick="pickStudent()" id="designButton" class="btn btn-success btn-design shadow mb-4" disabled>
+                    DÉSIGNER
+                </button>
+
+                <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-outline-warning btn-sm" onclick="resetSession()">Réinitialiser le cycle</button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="clearHistory()">Vider l'historique</button>
+                </div>
+
+                <div class="footer-credits">
+                    Concepteur : <strong>Atizoun Plateny AMOUSSOU</strong><br>
+                    Email : atizoun@gmail.com | Tél : 01 97 74 40 35
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- PWA: Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker enregistré avec succès:', reg))
+                .catch(err => console.error('Échec enregistrement SW:', err));
+            });
+        }
+    </script>
+
+    <script>
+        let appData = (typeof DataManager !== 'undefined') ? DataManager.load() : (JSON.parse(localStorage.getItem('designateur_data')) || { classes: {} });
+        let currentClass = null;
+        let pool = [];
+        let isPicking = false;
+        let appreciationSubmitted = false; 
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTickSound() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.05);
+        }
+
+        function playWinSound() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        function updateTotalStudentsHeader() {
+            const className = document.getElementById('classSelect').value;
+            if (!className) {
+                document.getElementById('totalStudentsHeader').innerText = "0";
+                document.getElementById('absentStudentsHeader').innerText = "0";
+                return;
+            }
+            const cls = appData.classes[className];
+            if (cls) {
+                document.getElementById('totalStudentsHeader').innerText = cls.students.length;
+                document.getElementById('absentStudentsHeader').innerText = cls.students.filter(s => s.absent).length;
+            }
+        }
+
+        function updateClassDropdown() {
+            const select = document.getElementById('classSelect');
+            for(let name in appData.classes) {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+            }
+        }
+
+        function loadClassData() {
+            const className = document.getElementById('classSelect').value;
+            document.getElementById('winner-name').innerText = "PRÊT ?";
+            document.getElementById('winner-count').innerText = "";
+            appreciationSubmitted = false;
+            
+            if(!className) {
+                currentClass = null;
+                pool = [];
+                document.getElementById('stat-total').innerText = "0";
+                document.getElementById('stat-remaining').innerText = "0";
+                document.getElementById('totalStudentsHeader').innerText = "0";
+                document.getElementById('absentStudentsHeader').innerText = "0";
+                document.getElementById('designButton').disabled = true;
+                return;
+            }
+
+            currentClass = appData.classes[className];
+            refreshPool();
+            document.getElementById('stat-total').innerText = currentClass.students.filter(s => !s.absent).length;
+            document.getElementById('stat-remaining').innerText = pool.length;
+            updateTotalStudentsHeader();
+            checkButtonState();
+        }
+
+        function refreshPool() {
+            if(!currentClass) return;
+            if(!currentClass.history) currentClass.history = [];
+            pool = currentClass.students
+                .filter(s => !s.absent)
+                .map(s => s.name.trim())
+                .filter(name => !currentClass.history.includes(name));
+        }
+
+        function checkButtonState() {
+            const btn = document.getElementById('designButton');
+            btn.disabled = (!currentClass || pool.length === 0 || isPicking);
+        }
+
+        async function pickStudent() {
+            if(isPicking || !currentClass || pool.length === 0) return;
+            
+            isPicking = true;
+            appreciationSubmitted = false; 
+            const btn = document.getElementById('designButton');
+            const winnerEl = document.getElementById('winner-name');
+            btn.classList.add('btn-design-loading');
+            btn.disabled = true;
+
+            let count = 0;
+            const interval = setInterval(() => {
+                winnerEl.innerText = pool[Math.floor(Math.random() * pool.length)];
+                winnerEl.classList.add('name-scroll');
+                playTickSound();
+                if(count++ > 20) {
+                    clearInterval(interval);
+                    finalizeSelection();
+                }
+            }, 60);
+        }
+
+        function finalizeSelection() {
+            const randomIndex = Math.floor(Math.random() * pool.length);
+            const selectedName = pool[randomIndex];
+            
+            pool.splice(randomIndex, 1);
+            playWinSound();
+            
+            const winnerEl = document.getElementById('winner-name');
+            winnerEl.innerText = selectedName;
+            winnerEl.classList.remove('name-scroll');
+            winnerEl.classList.add('winner-final');
+
+            const student = currentClass.students.find(s => s.name.trim() === selectedName);
+            if (student) {
+                student.count = (student.count || 0) + 1;
+                if(!currentClass.history) currentClass.history = [];
+                currentClass.history.push(selectedName);
+                saveData();
+                
+                let topApp = "";
+                if(student.count > 1 && student.appreciations && student.appreciations.length > 0) {
+                    const counts = {};
+                    student.appreciations.forEach(a => counts[a] = (counts[a] || 0) + 1);
+                    topApp = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+                    const labels = { 'bien': 'Excellent 🟢', 'passable': 'Moyen 🟠', 'mediocre': 'Médiocre 🔴' };
+                    topApp = ` | Profil: ${labels[topApp] || topApp}`;
+                }
+
+                document.getElementById('winner-count').innerText = `Désigné ${student.count} fois | Sexe: ${student.sexe || 'NC'}${topApp}`;
+            }
+
+            document.getElementById('stat-remaining').innerText = pool.length;
+            isPicking = false;
+            document.getElementById('designButton').classList.remove('btn-design-loading');
+            checkButtonState();
+        }
+
+        function saveData() {
+            if(typeof DataManager !== 'undefined') {
+                DataManager.save(appData);
+            } else {
+                localStorage.setItem('designateur_data', JSON.stringify(appData));
+            }
+        }
+
+        function markAsAbsent() {
+            const name = document.getElementById('winner-name').innerText;
+            const student = currentClass.students.find(s => s.name.trim() === name);
+            if(student) {
+                student.absent = true;
+                saveData();
+                alert(name + " retiré de l'effectif pour ce cycle.");
+                loadClassData();
+                closeModal();
+            }
+        }
+
+        function resetSession() {
+            if(!currentClass) return;
+            if(confirm("Réinitialiser le cycle ? Tous les élèves (y compris absents) reviendront dans la liste.")) {
+                currentClass.history = [];
+                currentClass.students.forEach(s => s.absent = false);
+                saveData();
+                loadClassData();
+            }
+        }
+
+        function clearHistory() {
+            if(!currentClass) return;
+            if(confirm("Voulez-vous vraiment vider tout l'historique ? Le compteur de désignation et les appréciations de tous les élèves de cette classe seront remis à zéro.")) {
+                currentClass.history = [];
+                currentClass.students.forEach(student => {
+                    student.count = 0;
+                    student.appreciations = [];
+                    student.absent = false;
+                });
+                saveData();
+                loadClassData();
+            }
+        }
+
+        function openAppreciationModal() {
+            const name = document.getElementById('winner-name').innerText;
+            if(name === "PRÊT ?" || isPicking) return;
+            
+            const student = currentClass.students.find(s => s.name.trim() === name);
+            document.getElementById('modalStudentName').innerText = name;
+            document.getElementById('modalStudentInfo').innerText = `Sexe: ${student.sexe || 'NC'} | Désigné: ${student.count} fois`;
+            
+            const btns = document.querySelectorAll('.app-btn:not(.app-btn-absent)');
+            btns.forEach(b => {
+                b.disabled = appreciationSubmitted;
+                b.style.opacity = appreciationSubmitted ? "0.3" : "1";
+            });
+
+            document.getElementById('appreciationModal').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('appreciationModal').style.display = 'none'; }
+
+        function setAppreciation(grade) {
+            if(appreciationSubmitted) return;
+
+            const name = document.getElementById('winner-name').innerText;
+            const student = currentClass.students.find(s => s.name.trim() === name);
+            if(student) {
+                if(!student.appreciations) student.appreciations = [];
+                student.appreciations.push(grade);
+                saveData();
+                
+                appreciationSubmitted = true;
+
+                const colors = {
+                    'mediocre': 'rgba(231, 76, 60, 0.4)',
+                    'passable': 'rgba(243, 156, 18, 0.4)',
+                    'bien': 'rgba(0, 188, 140, 0.4)'
+                };
+
+                const ov = document.getElementById('success-overlay');
+                ov.style.backgroundColor = colors[grade];
+                ov.style.display = 'flex';
+                setTimeout(() => ov.style.display = 'none', 1000);
+                closeModal();
+            }
+        }
+
+        updateClassDropdown();
+        updateTotalStudentsHeader();
+    </script>
+</body>
+</html>

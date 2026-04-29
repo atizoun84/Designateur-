@@ -3,1211 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Designateur SPA - Bénin</title>
+    <title>Accueil - Designateur</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#0d6efd">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Designateur">
-    <link rel="apple-touch-icon" href="./logoapp.png">
-    <link rel="icon" type="image/png" href="./logoapp.png">
+    <script src="dataManager.js"></script>
     
     <style>
         :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #198754;
+            --primary-color: #375a7f;
+            --secondary-color: #00bc8c;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --bg-dark: #222222;
+            --card-dark: #303030;
+            --text-light: #ebebeb;
+            --boy-color: #3498db;
+            --girl-color: #e74c3c;
         }
-        body { background-color: #f8f9fa; }
-        .view { display: none; }
-        .view.active { display: block; }
-        
-        /* Bouton désigner style circulaire */
-        .btn-design {
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            box-shadow: 0 10px 20px rgba(25, 135, 84, 0.3);
-            transition: transform 0.2s;
-        }
-        .btn-design:active { transform: scale(0.95); }
-        .btn-design:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-light);
+            padding-bottom: 80px; 
         }
         
-        .result-box {
-            border: 4px solid var(--primary-color);
-            min-height: 150px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 15px;
-            background: white;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
+        .navbar { background-color: #1a1a1a !important; border-bottom: 1px solid #333; }
+        .navbar-brand { color: var(--secondary-color) !important; }
+        .navbar-nav .nav-link { color: #ccc !important; }
+        .navbar-nav .nav-link.active { color: var(--secondary-color) !important; font-weight: 700; }
+
+        /* Plaquettes réduites et allongées */
+        .stat-card-global {
+            background: var(--card-dark); border-radius: 12px;
+            padding: 10px 5px; text-align: center; border: 1px solid #444;
+            transition: transform 0.3s;
+        }
+        .stat-card-global:hover { transform: translateY(-3px); border-color: var(--secondary-color); }
+        .stat-number-big { font-size: 1.4rem; font-weight: 800; color: var(--secondary-color); line-height: 1.2; }
+        .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #888; margin-top: 2px; letter-spacing: 0.5px; }
+
+        .class-summary-card {
+            background: var(--card-dark); border-radius: 15px; border: 1px solid #444;
+            margin-bottom: 15px; overflow: hidden;
+        }
+        .class-summary-header {
+            background: rgba(55, 90, 127, 0.2); padding: 10px 15px;
+            border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;
         }
         
-        .result-box:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        .shortcut-btn {
+            height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; border-radius: 20px; text-decoration: none; transition: all 0.3s;
+            border: 2px solid transparent;
         }
-        
-        /* Animation pour le défilement des noms */
-        @keyframes nameFlash {
-            0% { opacity: 0.3; transform: scale(0.95); }
-            50% { opacity: 1; transform: scale(1.05); }
-            100% { opacity: 0.3; transform: scale(0.95); }
-        }
-        
-        .name-scroll {
-            animation: nameFlash 0.05s ease-in-out;
-        }
-        
-        .winner-final {
-            animation: winnerAppear 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-        }
-        
-        @keyframes winnerAppear {
-            0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
-            50% { opacity: 0.8; transform: scale(1.2) rotate(5deg); }
-            100% { opacity: 1; transform: scale(1) rotate(0deg); }
-        }
-        
-        /* Bouton avec animation pendant le tirage */
-        .btn-design-loading {
-            animation: buttonPulse 0.3s infinite;
-            cursor: wait !important;
-        }
-        
-        @keyframes buttonPulse {
-            0% { transform: scale(1); box-shadow: 0 10px 20px rgba(25, 135, 84, 0.3); }
-            50% { transform: scale(1.05); box-shadow: 0 15px 30px rgba(25, 135, 84, 0.5); }
-            100% { transform: scale(1); box-shadow: 0 10px 20px rgba(25, 135, 84, 0.3); }
-        }
-        
-        /* Overlay de succès plein écran transparent */
-        #success-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(25, 135, 84, 0.85);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            color: white;
-            transition: opacity 0.3s ease;
-        }
-        
-        /* Animation pour le son (effet visuel) */
-        @keyframes soundWave {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-        
-        .sound-wave {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            pointer-events: none;
-            animation: soundWave 0.5s ease-out forwards;
-            z-index: 10000;
-        }
-        
-        /* Modal d'appréciation */
-        .appreciation-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10001;
-        }
-        
-        .appreciation-content {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            animation: modalAppear 0.3s ease-out;
-        }
-        
-        @keyframes modalAppear {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        
-        .appreciation-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .appreciation-btn {
-            padding: 15px 25px;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .appreciation-btn:hover { transform: scale(1.05); }
-        
-        .appreciation-mediocre { background-color: #dc3545; color: white; }
-        .appreciation-passable { background-color: #fd7e14; color: white; }
-        .appreciation-bien { background-color: #198754; color: white; }
-        
-        .color-mediocre { color: #dc3545; }
-        .color-passable { color: #fd7e14; }
-        .color-bien { color: #198754; }
-        
-        .bg-mediocre-light { background-color: rgba(220, 53, 69, 0.1); }
-        .bg-passable-light { background-color: rgba(253, 126, 20, 0.1); }
-        .bg-bien-light { background-color: rgba(25, 135, 84, 0.1); }
-        
-        .appreciation-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        
-        /* Modal de confirmation */
-        .secret-confirm-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10002;
-        }
-        
-        .secret-confirm-content {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            max-width: 350px;
-            width: 90%;
-        }
-        
-        .secret-input {
-            font-size: 2rem;
-            text-align: center;
-            letter-spacing: 5px;
-            font-family: monospace;
-        }
-        
-        /* Modal Élèves élégante */
-        .student-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10003;
-        }
-        
-        .student-modal-content {
-            background: white;
-            border-radius: 25px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 85vh;
-            overflow: hidden;
-            animation: modalAppear 0.3s ease-out;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        
-        .student-modal-header {
-            background: linear-gradient(135deg, #0d6efd, #0a58ca);
-            color: white;
-            padding: 20px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .student-modal-body {
-            padding: 25px;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-        
-        .stats-cards {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .stat-card {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 15px;
-            text-align: center;
-            flex: 1;
-            min-width: 100px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #0d6efd;
-        }
-        
-        .student-list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #e9ecef;
-            transition: background 0.2s;
-        }
-        
-        .student-list-item:hover {
-            background: #f8f9fa;
-        }
-        
-        .student-info {
-            flex: 1;
-        }
-        
-        .student-name {
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        
-        .student-sex {
-            font-size: 0.85rem;
-            color: #6c757d;
-        }
-        
-        .student-actions {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .btn-icon {
-            padding: 5px 10px;
-            font-size: 0.85rem;
-        }
-        
-        .add-student-form {
-            background: #f8f9fa;
+        .shortcut-design { background: rgba(0, 188, 140, 0.1); color: var(--secondary-color); border-color: rgba(0, 188, 140, 0.2); }
+        .shortcut-config { background: rgba(55, 90, 127, 0.1); color: #5dade2; border-color: rgba(55, 90, 127, 0.2); }
+        .shortcut-btn:hover { transform: scale(1.02); filter: brightness(1.2); }
+
+        /* Couleurs spécifiques demandées */
+        .text-boy { color: var(--boy-color) !important; }
+        .text-girl { color: var(--girl-color) !important; }
+
+        .footer-credits {
+            margin-top: 40px; 
+            font-size: 0.85rem; 
+            color: #888; 
             padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
+            border-top: 1px solid #444;
+            text-align: center;
         }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            font-weight: 500;
-            margin-bottom: 5px;
-            display: block;
-        }
+        .table-dark-custom { --bs-table-bg: #303030; color: white; border-color: #444; font-size: 0.8rem; margin-bottom: 0; }
+        .table-dark-custom th { color: #888; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; border-bottom: 1px solid #444; }
+        .table-dark-custom td { border-bottom: 1px solid #3a3a3a; padding: 6px 4px; }
     </style>
 </head>
 <body>
 
-    <div id="success-overlay">
-        <div class="text-center">
-            <div class="display-1">✅</div>
-            <h2 class="fw-bold">Action effectuée avec succès !</h2>
-        </div>
-    </div>
-    
-    <div id="appreciationModal" class="appreciation-modal">
-        <div class="appreciation-content">
-            <h3 id="modalStudentName" class="mb-3"></h3>
-            <p class="text-muted mb-3">Choisissez une appréciation</p>
-            <div class="appreciation-buttons">
-                <button class="appreciation-btn appreciation-mediocre" onclick="setAppreciation('mediocre')">🔴 Médiocre</button>
-                <button class="appreciation-btn appreciation-passable" onclick="setAppreciation('passable')">🟠 Passable</button>
-                <button class="appreciation-btn appreciation-bien" onclick="setAppreciation('bien')">🟢 Très bien</button>
-            </div>
-            <button onclick="closeModal()" class="btn btn-secondary mt-3">Annuler</button>
-        </div>
-    </div>
-    
-    <div id="secretConfirmModal" class="secret-confirm-modal">
-        <div class="secret-confirm-content">
-            <h3 class="mb-3">⚠️ Action irréversible</h3>
-            <p class="text-muted mb-3">Confirmation requise</p>
-            <input type="password" id="secretCodeInput" class="form-control secret-input mb-3" placeholder="•••••" maxlength="5" autocomplete="off">
-            <div class="d-flex gap-2">
-                <button onclick="validateSecretCode()" class="btn btn-danger flex-grow-1">Confirmer</button>
-                <button onclick="closeSecretModal()" class="btn btn-secondary flex-grow-1">Annuler</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal Élèves élégante -->
-    <div id="studentModal" class="student-modal">
-        <div class="student-modal-content">
-            <div class="student-modal-header">
-                <h4 class="mb-0" id="studentModalTitle">Gestion des élèves</h4>
-                <button class="btn-close btn-close-white" onclick="closeStudentModal()"></button>
-            </div>
-            <div class="student-modal-body">
-                <div id="statsContainer" class="stats-cards"></div>
-                
-                <div class="add-student-form">
-                    <h6 class="mb-3">➕ Ajouter un élève</h6>
-                    <div class="row">
-                        <div class="col-md-7">
-                            <input type="text" id="newStudentName" class="form-control" placeholder="Nom et Prénoms">
-                        </div>
-                        <div class="col-md-3">
-                            <select id="newStudentSexe" class="form-select">
-                                <option value="M">Masculin (M)</option>
-                                <option value="F">Féminin (F)</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-primary w-100" onclick="addNewStudent()">Ajouter</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <h6 class="mb-3">📋 Liste des élèves</h6>
-                <div id="studentsListContainer"></div>
-            </div>
-        </div>
-    </div>
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">DESIGNATEUR DU PROF PLATENY 🇧🇯</a>
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand fw-bold mb-0" href="index.html" style="color: var(--secondary-color);">DESIGNATEUR 🇧🇯</a>
+            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#" onclick="showView('design-view')">Désigner</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showView('config-view')">Configuration</a>
-                    </li>
-                    <li class="nav-item">
-                        <span class="nav-link" style="background: rgba(255,255,255,0.2); border-radius: 20px; margin-left: 10px;">
-                            📊 Total: <strong id="totalStudentsHeader">0</strong> élève(s)
-                        </span>
-                    </li>
+                    <li class="nav-item"><a class="nav-link active" href="index.html">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="designer.html">Désignation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="configuration.html">Configuration</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
     <div class="container">
-        
-        <section id="design-view" class="view active">
-            <div class="row justify-content-center">
-                <div class="col-md-6 text-center">
-                    <select id="classSelect" class="form-select form-select-lg mb-4 shadow-sm" onchange="loadClassData()">
-                        <option value="">-- Sélectionnez une Classe --</option>
-                    </select>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <a href="designer.html" class="shortcut-btn shortcut-design">
+                    <span class="display-6">🎯</span>
+                    <h5 class="fw-bold mt-2">DÉSIGNATION</h5>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="configuration.html" class="shortcut-btn shortcut-config">
+                    <span class="display-6">⚙️</span>
+                    <h5 class="fw-bold mt-2">CONFIGURATION</h5>
+                </a>
+            </div>
+        </div>
 
-                    <div class="row mb-4 g-2">
-                        <div class="col-4">
-                            <div class="bg-white p-2 rounded shadow-sm">
-                                <small class="text-muted d-block">Effectif</small>
-                                <strong id="stat-total" class="h5">0</strong>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="bg-white p-2 rounded shadow-sm">
-                                <small class="text-muted d-block">Restants</small>
-                                <strong id="stat-remaining" class="h5 text-danger">0</strong>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="bg-white p-2 rounded shadow-sm">
-                                <small class="text-muted d-block">Dernier</small>
-                                <strong id="stat-last" class="text-truncate d-block small">-</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="result-box mb-4 shadow-sm p-3" onclick="openAppreciationModal()">
-                        <div>
-                            <h2 id="winner-name" class="display-6 fw-bold text-primary">PRÊT ?</h2>
-                            <p id="winner-count" class="text-muted mb-0"></p>
-                            <div id="appreciation-badge" class="appreciation-badge"></div>
-                        </div>
-                    </div>
-
-                    <button onclick="pickStudent()" id="designButton" class="btn btn-success btn-design shadow mb-4" disabled>
-                        Désigner un élève
-                    </button>
-
-                    <div class="d-flex gap-2 justify-content-center">
-                        <button class="btn btn-outline-warning btn-sm" onclick="resetSession()">Réinitialiser Session</button>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="openSecretModal('clearHistory')">Vider l'historique</button>
-                    </div>
+        <h6 class="mb-3 fw-bold text-secondary text-uppercase" style="letter-spacing: 1px;">📊 Statistiques Globales</h6>
+        <div class="row g-2 mb-4" id="globalStatsContainer">
+            <div class="col-3">
+                <div class="stat-card-global">
+                    <div class="stat-number-big" id="g-total">00</div>
+                    <div class="stat-label">Total</div>
                 </div>
             </div>
-        </section>
-
-        <section id="config-view" class="view">
-            <div class="row">
-                <div class="col-md-5">
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-success text-white font-weight-bold">Créer ou Importer une Classe</div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label small">Nom de la Classe :</label>
-                                <input type="text" id="classNameInput" class="form-control" placeholder="Ex: 6ème A, 4M3">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small">Importer Fichier Excel (.xlsx, .xls) :</label>
-                                <input type="file" id="excelInput" class="form-control" accept=".xlsx, .xls">
-                                <small class="text-muted">Colonnes requises : [Nom Prénoms] et [sexe]</small>
-                            </div>
-                            <button class="btn btn-primary w-100" onclick="saveClass()">Enregistrer la Classe</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-7">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-success text-white">Classes Disponibles</div>
-                        <ul class="list-group list-group-flush" id="classesDisplayList">
-                            </ul>
-                    </div>
+            <div class="col-3">
+                <div class="stat-card-global">
+                    <div class="stat-number-big text-boy" id="g-m">00</div>
+                    <div class="stat-label">Garçons (M)</div>
                 </div>
             </div>
-        </section>
+            <div class="col-3">
+                <div class="stat-card-global">
+                    <div class="stat-number-big text-girl" id="g-f">00</div>
+                    <div class="stat-label">Filles (F)</div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="stat-card-global">
+                    <div class="stat-number-big text-danger" id="g-abs">00</div>
+                    <div class="stat-label">Absents</div>
+                </div>
+            </div>
+        </div>
 
+        <h6 class="mb-3 fw-bold text-secondary text-uppercase" style="letter-spacing: 1px;">🏫 Récapitulatif par classe</h6>
+        <div id="classesSummaryContainer"></div>
+
+        <div class="footer-credits">
+            Concepteur : <strong>Atizoun Plateny AMOUSSOU</strong><br>
+            Email : atizoun@gmail.com | Tél : 01 97 74 40 35
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
-        // --- LOGIQUE SPA ET DONNÉES ---
-        let appData = JSON.parse(localStorage.getItem('designateur_data')) || { classes: {} };
-        let currentClass = null;
-        let currentClassName = null;
-        let pool = [];
-        let isPicking = false;
-        let audioContext = null;
-        let tickInterval = null;
-        let currentSelectedStudent = null;
-        let pendingAction = null;
-        let pendingStudentAction = null;
-        
-        const SECRET_CODE = "11984";
-        
-        // Fonction pour calculer et mettre à jour le total des élèves dans le header
-        function updateTotalStudentsHeader() {
-            let total = 0;
-            for (let className in appData.classes) {
-                total += appData.classes[className].students.length;
-            }
-            const totalElement = document.getElementById('totalStudentsHeader');
-            if (totalElement) {
-                totalElement.innerText = total;
-                // Ajouter une petite animation de mise à jour
-                totalElement.style.transform = 'scale(1.1)';
-                setTimeout(() => {
-                    if (totalElement) totalElement.style.transform = 'scale(1)';
-                }, 200);
-            }
-        }
-        
-        function updateDesignButtonState() {
-            const designButton = document.getElementById('designButton');
-            if (!currentClass || currentClass.students.length === 0) {
-                designButton.disabled = true;
-            } else {
-                designButton.disabled = false;
-            }
-        }
-        
-        function initAudio() {
-            if (!audioContext && window.AudioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        }
-        
-        function openSecretModal(action) {
-            pendingAction = action;
-            document.getElementById('secretConfirmModal').style.display = 'flex';
-            document.getElementById('secretCodeInput').value = '';
-            document.getElementById('secretCodeInput').focus();
-        }
-        
-        function closeSecretModal() {
-            document.getElementById('secretConfirmModal').style.display = 'none';
-            pendingAction = null;
-        }
-        
-        function validateSecretCode() {
-            const inputCode = document.getElementById('secretCodeInput').value;
-            if (inputCode === SECRET_CODE) {
-                if (pendingAction === 'clearHistory') {
-                    executeClearHistory();
-                } else if (pendingAction === 'deleteClass') {
-                    executeDeleteClass();
-                } else if (pendingAction === 'deleteStudent') {
-                    executeDeleteStudent();
-                }
-                closeSecretModal();
-            } else {
-                alert("Code incorrect");
-                document.getElementById('secretCodeInput').value = '';
-            }
-        }
-        
-        function executeClearHistory() {
-            if(currentClass) {
-                currentClass.history = [];
-                currentClass.students.forEach(s => {
-                    s.count = 0;
-                    s.appreciations = [];
-                });
-                localStorage.setItem('designateur_data', JSON.stringify(appData));
-                updateUI();
-                document.getElementById('winner-name').innerText = "PRÊT ?";
-                document.getElementById('winner-name').style.color = '#0d6efd';
-                updateAppreciationBadge(null);
-                showSuccessOverlay('rgba(220, 53, 69, 0.85)');
-            }
-        }
-        
-        let pendingDeleteClassName = null;
-        
-        function executeDeleteClass() {
-            if (pendingDeleteClassName) {
-                delete appData.classes[pendingDeleteClassName];
-                localStorage.setItem('designateur_data', JSON.stringify(appData));
-                renderClassesList();
-                updateClassDropdown();
-                updateTotalStudentsHeader();
-                if (currentClass && currentClassName === pendingDeleteClassName) {
-                    currentClass = null;
-                    currentClassName = null;
-                    pool = [];
-                    document.getElementById('winner-name').innerText = "PRÊT ?";
-                    document.getElementById('winner-name').style.color = '#0d6efd';
-                    document.getElementById('winner-count').innerText = "";
-                    updateAppreciationBadge(null);
-                    updateUI();
-                    updateDesignButtonState();
-                }
-                showSuccessOverlay('rgba(220, 53, 69, 0.85)');
-                pendingDeleteClassName = null;
-            }
-        }
-        
-        let pendingStudentDelete = null;
-        
-        function executeDeleteStudent() {
-            if (pendingStudentDelete && currentClass) {
-                const index = currentClass.students.findIndex(s => s.name === pendingStudentDelete);
-                if (index !== -1) {
-                    currentClass.students.splice(index, 1);
-                    resetPool();
-                    updateUI();
-                    localStorage.setItem('designateur_data', JSON.stringify(appData));
-                    updateDesignButtonState();
-                    updateTotalStudentsHeader();
-                    if (currentClass.students.length > 0) {
-                        renderStudentModal();
-                    } else {
-                        closeStudentModal();
-                    }
-                    showSuccessOverlay('rgba(220, 53, 69, 0.85)');
-                }
-                pendingStudentDelete = null;
-            }
-        }
-        
-        function showSuccessOverlay(color) {
-            const overlay = document.getElementById('success-overlay');
-            overlay.style.background = color || 'rgba(25, 135, 84, 0.85)';
-            overlay.style.display = 'flex';
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                overlay.style.background = 'rgba(25, 135, 84, 0.85)';
-            }, 1500);
-        }
-        
-        function playTimpaniSound() {
-            if (!audioContext) return;
-            const gainNode = audioContext.createGain();
-            gainNode.gain.value = 0.6;
-            gainNode.connect(audioContext.destination);
-            const osc1 = audioContext.createOscillator();
-            osc1.type = 'sine';
-            osc1.frequency.value = 80;
-            osc1.connect(gainNode);
-            const osc2 = audioContext.createOscillator();
-            osc2.type = 'sine';
-            osc2.frequency.value = 120;
-            osc2.connect(gainNode);
-            osc1.start();
-            osc2.start();
-            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.8);
-            osc1.stop(audioContext.currentTime + 0.8);
-            osc2.stop(audioContext.currentTime + 0.8);
-            for(let i = 0; i < 2; i++) {
-                setTimeout(() => {
-                    const wave = document.createElement('div');
-                    wave.className = 'sound-wave';
-                    wave.style.background = 'rgba(25, 135, 84, 0.6)';
-                    document.body.appendChild(wave);
-                    setTimeout(() => wave.remove(), 500);
-                }, i * 100);
-            }
-        }
-        
-        function playTickSound() {
-            if (!audioContext) return;
-            const gainNode = audioContext.createGain();
-            gainNode.gain.value = 0.4;
-            gainNode.connect(audioContext.destination);
-            const oscillator = audioContext.createOscillator();
-            oscillator.type = 'sine';
-            oscillator.frequency.value = 1200;
-            oscillator.connect(gainNode);
-            const oscillator2 = audioContext.createOscillator();
-            oscillator2.type = 'triangle';
-            oscillator2.frequency.value = 600;
-            oscillator2.connect(gainNode);
-            oscillator.start();
-            oscillator2.start();
-            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.05);
-            oscillator.stop(audioContext.currentTime + 0.05);
-            oscillator2.stop(audioContext.currentTime + 0.05);
-            const wave = document.createElement('div');
-            wave.className = 'sound-wave';
-            document.body.appendChild(wave);
-            setTimeout(() => wave.remove(), 300);
-        }
-        
-        function playFinalSound() {
-            if (!audioContext) return;
-            const gainNode = audioContext.createGain();
-            gainNode.gain.value = 0.5;
-            gainNode.connect(audioContext.destination);
-            const osc1 = audioContext.createOscillator();
-            osc1.type = 'sine';
-            osc1.frequency.value = 330;
-            osc1.connect(gainNode);
-            const osc2 = audioContext.createOscillator();
-            osc2.type = 'sine';
-            osc2.frequency.value = 523.25;
-            osc2.connect(gainNode);
-            osc1.start();
-            osc2.start();
-            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.3);
-            osc1.stop(audioContext.currentTime + 0.3);
-            osc2.stop(audioContext.currentTime + 0.3);
-            for(let i = 0; i < 3; i++) {
-                setTimeout(() => {
-                    const wave = document.createElement('div');
-                    wave.className = 'sound-wave';
-                    wave.style.width = (100 + i * 30) + 'px';
-                    wave.style.height = (100 + i * 30) + 'px';
-                    document.body.appendChild(wave);
-                    setTimeout(() => wave.remove(), 500);
-                }, i * 50);
-            }
-        }
-        
-        function stopAllTicks() {
-            if (tickInterval) {
-                clearInterval(tickInterval);
-                tickInterval = null;
-            }
-        }
-        
-        function getMajorityColor(appreciations) {
-            if (!appreciations || appreciations.length === 0) return null;
-            const counts = { mediocre: 0, passable: 0, bien: 0 };
-            appreciations.forEach(grade => {
-                if (counts[grade] !== undefined) counts[grade]++;
-            });
-            let maxCount = 0;
-            let majority = null;
-            for (let [grade, count] of Object.entries(counts)) {
-                if (count > maxCount) {
-                    maxCount = count;
-                    majority = grade;
-                }
-            }
-            return majority;
-        }
-        
-        function updateAppreciationBadge(studentName) {
-            const badge = document.getElementById('appreciation-badge');
-            if (!studentName || !currentClass) {
-                badge.innerHTML = '';
-                badge.className = 'appreciation-badge';
+        let appData = (typeof DataManager !== 'undefined') ? DataManager.load() : (JSON.parse(localStorage.getItem('designateur_data')) || { classes: {} });
+
+        function calculateStats() {
+            let gTotal = 0, gM = 0, gF = 0, gAbs = 0;
+            const container = document.getElementById('classesSummaryContainer');
+            container.innerHTML = "";
+
+            const keys = Object.keys(appData.classes);
+            if(keys.length === 0) {
+                container.innerHTML = `<div class="card bg-dark border-secondary p-4 text-center text-muted small">Aucune classe enregistrée.</div>`;
                 return;
             }
-            const student = currentClass.students.find(s => s.name === studentName);
-            if (student && student.appreciations && student.appreciations.length > 0) {
-                const majority = getMajorityColor(student.appreciations);
-                if (majority === 'mediocre') {
-                    badge.innerHTML = '🎓 Appréciation majoritaire : Médiocre';
-                    badge.className = 'appreciation-badge bg-mediocre-light color-mediocre';
-                } else if (majority === 'passable') {
-                    badge.innerHTML = '🎓 Appréciation majoritaire : Passable';
-                    badge.className = 'appreciation-badge bg-passable-light color-passable';
-                } else if (majority === 'bien') {
-                    badge.innerHTML = '🎓 Appréciation majoritaire : Très bien';
-                    badge.className = 'appreciation-badge bg-bien-light color-bien';
-                }
-            } else {
-                badge.innerHTML = '';
-                badge.className = 'appreciation-badge';
-            }
-        }
-        
-        function openAppreciationModal() {
-            const winnerName = document.getElementById('winner-name').innerText;
-            if (!currentClass || winnerName === 'PRÊT ?') return;
-            currentSelectedStudent = currentClass.students.find(s => s.name === winnerName);
-            if (currentSelectedStudent) {
-                document.getElementById('modalStudentName').innerHTML = `${winnerName}<br><small class="text-muted">Notez sa réponse</small>`;
-                document.getElementById('appreciationModal').style.display = 'flex';
-            }
-        }
-        
-        function closeModal() {
-            document.getElementById('appreciationModal').style.display = 'none';
-            currentSelectedStudent = null;
-        }
-        
-        function setAppreciation(grade) {
-            if (currentSelectedStudent) {
-                if (!currentSelectedStudent.appreciations) currentSelectedStudent.appreciations = [];
-                currentSelectedStudent.appreciations.push(grade);
-                localStorage.setItem('designateur_data', JSON.stringify(appData));
-                const wave = document.createElement('div');
-                wave.className = 'sound-wave';
-                wave.style.background = grade === 'mediocre' ? 'rgba(220,53,69,0.5)' : (grade === 'passable' ? 'rgba(253,126,20,0.5)' : 'rgba(25,135,84,0.5)');
-                document.body.appendChild(wave);
-                setTimeout(() => wave.remove(), 500);
-                updateAppreciationBadge(currentSelectedStudent.name);
-                closeModal();
-                showSuccessOverlay(grade === 'mediocre' ? 'rgba(220,53,69,0.85)' : (grade === 'passable' ? 'rgba(253,126,20,0.85)' : 'rgba(25,135,84,0.85)'));
-            }
-        }
-        
-        // Gestion des élèves
-        function openStudentModal() {
-            if (!currentClass) {
-                alert("Veuillez d'abord sélectionner une classe");
-                return;
-            }
-            renderStudentModal();
-            document.getElementById('studentModal').style.display = 'flex';
-        }
-        
-        function closeStudentModal() {
-            document.getElementById('studentModal').style.display = 'none';
-        }
-        
-        function renderStudentModal() {
-            if (!currentClass) return;
-            const students = currentClass.students;
-            const total = students.length;
-            const maleCount = students.filter(s => s.sexe === 'M').length;
-            const femaleCount = students.filter(s => s.sexe === 'F').length;
-            
-            document.getElementById('statsContainer').innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-number">${total}</div>
-                    <div>Total élèves</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: #0d6efd;">${maleCount}</div>
-                    <div>Masculins (M)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: #dc3545;">${femaleCount}</div>
-                    <div>Féminins (F)</div>
-                </div>
-            `;
-            
-            let studentsHtml = '';
-            students.forEach((student, index) => {
-                studentsHtml += `
-                    <div class="student-list-item">
-                        <div class="student-info">
-                            <div class="student-name">${escapeHtml(student.name)}</div>
-                            <div class="student-sex">Sexe: ${student.sexe === 'M' ? 'Masculin' : 'Féminin'}</div>
+
+            keys.forEach(className => {
+                const cls = appData.classes[className];
+                const students = cls.students;
+                
+                const cTotal = students.length;
+                const cM = students.filter(s => s.sexe === 'M').length;
+                const cF = students.filter(s => s.sexe === 'F').length;
+                
+                const cAbs = students.filter(s => s.absent).length;
+                const cAbsM = students.filter(s => s.absent && s.sexe === 'M').length;
+                const cAbsF = students.filter(s => s.absent && s.sexe === 'F').length;
+
+                const cPre = cTotal - cAbs;
+                const cPreM = cM - cAbsM;
+                const cPreF = cF - cAbsF;
+
+                gTotal += cTotal; gM += cM; gF += cF;
+                gAbs += cAbs;
+
+                const fmt = (val) => val.toString().padStart(2, '0');
+
+                container.innerHTML += `
+                    <div class="class-summary-card">
+                        <div class="class-summary-header">
+                            <span class="fw-bold text-uppercase small" style="color: var(--secondary-color);">${className}</span>
+                            <span class="badge bg-secondary" style="font-size: 0.7rem;">${cTotal} Elèves</span>
                         </div>
-                        <div class="student-actions">
-                            <button class="btn btn-sm btn-outline-primary btn-icon" onclick="editStudent(${index})">✏️ Modifier</button>
-                            <button class="btn btn-sm btn-outline-danger btn-icon" onclick="deleteStudentWithConfirm('${escapeHtml(student.name).replace(/'/g, "\\'")}')">🗑️ Supprimer</button>
+                        <div class="p-2">
+                            <table class="table table-dark table-dark-custom text-center mb-0" style="table-layout: fixed; width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th class="text-start" style="width: 35%;">ETAT</th>
+                                        <th class="text-boy fw-bold" style="width: 20%; font-size: 0.95rem;">G</th>
+                                        <th class="text-girl fw-bold" style="width: 20%; font-size: 0.95rem;">F</th>
+                                        <th class="fw-bold text-white" style="width: 25%; font-size: 0.95rem;">T</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size: 1rem;">
+                                    <tr>
+                                        <td class="text-start fw-bold text-white small">INSCRITS</td>
+                                        <td class="text-boy fw-bold" style="font-size: 1.1rem;">${fmt(cM)}</td>
+                                        <td class="text-girl fw-bold" style="font-size: 1.1rem;">${fmt(cF)}</td>
+                                        <td class="fw-bold text-white" style="font-size: 1.1rem;">${fmt(cTotal)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold text-white small">PRÉSENTS</td>
+                                        <td class="text-boy fw-bold">${fmt(cPreM)}</td>
+                                        <td class="text-girl fw-bold">${fmt(cPreF)}</td>
+                                        <td class="fw-bold text-white">${fmt(cPre)}</td>
+                                    </tr>
+                                    <tr style="border-bottom: none;">
+                                        <td class="text-start fw-bold text-white small">ABSENTS</td>
+                                        <td class="text-boy fw-bold">${fmt(cAbsM)}</td>
+                                        <td class="text-girl fw-bold">${fmt(cAbsF)}</td>
+                                        <td class="text-danger fw-bold" style="font-size: 1.1rem;">${fmt(cAbs)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 `;
             });
-            
-            if (students.length === 0) {
-                studentsHtml = '<div class="text-center text-muted py-4">Aucun élève dans cette classe</div>';
-            }
-            
-            document.getElementById('studentsListContainer').innerHTML = studentsHtml;
+
+            document.getElementById('g-total').innerText = gTotal.toString().padStart(2, '0');
+            document.getElementById('g-m').innerText = gM.toString().padStart(2, '0');
+            document.getElementById('g-f').innerText = gF.toString().padStart(2, '0');
+            document.getElementById('g-abs').innerText = gAbs.toString().padStart(2, '0');
         }
-        
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-        
-        function addNewStudent() {
-            const name = document.getElementById('newStudentName').value.trim();
-            const sexe = document.getElementById('newStudentSexe').value;
-            if (!name) {
-                alert("Veuillez saisir un nom");
-                return;
-            }
-            if (currentClass.students.some(s => s.name === name)) {
-                alert("Cet élève existe déjà");
-                return;
-            }
-            currentClass.students.push({
-                name: name,
-                sexe: sexe,
-                count: 0,
-                appreciations: []
-            });
-            localStorage.setItem('designateur_data', JSON.stringify(appData));
-            resetPool();
-            updateUI();
-            renderStudentModal();
-            updateClassDropdown();
-            updateDesignButtonState();
-            updateTotalStudentsHeader();
-            document.getElementById('newStudentName').value = '';
-            showSuccessOverlay('rgba(25, 135, 84, 0.85)');
-        }
-        
-        function editStudent(index) {
-            const student = currentClass.students[index];
-            const newName = prompt("Modifier le nom de l'élève :", student.name);
-            if (newName && newName.trim()) {
-                if (newName.trim() !== student.name && currentClass.students.some(s => s.name === newName.trim())) {
-                    alert("Ce nom existe déjà");
-                    return;
-                }
-                student.name = newName.trim();
-                localStorage.setItem('designateur_data', JSON.stringify(appData));
-                resetPool();
-                updateUI();
-                renderStudentModal();
-                updateClassDropdown();
-                showSuccessOverlay('rgba(25, 135, 84, 0.85)');
-            }
-        }
-        
-        function deleteStudentWithConfirm(studentName) {
-            pendingStudentDelete = studentName;
-            openSecretModal('deleteStudent');
-        }
-        
-        function showView(viewId) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            if(event && event.target && event.target.classList) event.target.classList.add('active');
-            if(viewId === 'config-view') renderClassesList();
-            if(viewId === 'design-view') updateClassDropdown();
-        }
-        
-        function saveClass() {
-            const name = document.getElementById('classNameInput').value.trim();
-            const fileInput = document.getElementById('excelInput');
-            if(!name) return alert("Veuillez saisir un nom de classe");
-            if(!fileInput.files || fileInput.files.length === 0) return alert("Veuillez choisir un fichier Excel");
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const firstSheetName = workbook.SheetNames[0];
-                const firstSheet = workbook.Sheets[firstSheetName];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                
-                const formattedStudents = jsonData.map(row => {
-                    let nameField = null;
-                    let sexeField = null;
-                    if(row['Nom Prénoms'] !== undefined) nameField = row['Nom Prénoms'];
-                    else if(row['Nom_Prenoms'] !== undefined) nameField = row['Nom_Prenoms'];
-                    else if(row['NomPrenoms'] !== undefined) nameField = row['NomPrenoms'];
-                    else if(row['NOM_PRENOMS'] !== undefined) nameField = row['NOM_PRENOMS'];
-                    else {
-                        const keys = Object.keys(row);
-                        for(let k of keys) {
-                            if(k.toLowerCase().includes('nom') && (k.toLowerCase().includes('prénom') || k.toLowerCase().includes('prenom'))) {
-                                nameField = row[k];
-                                break;
-                            }
-                        }
-                    }
-                    if(row['sexe'] !== undefined) sexeField = row['sexe'];
-                    else if(row['Sexe'] !== undefined) sexeField = row['Sexe'];
-                    else if(row['SEXE'] !== undefined) sexeField = row['SEXE'];
-                    else if(row['gender'] !== undefined) sexeField = row['gender'];
-                    if(!nameField) return null;
-                    let normalizedSexe = '';
-                    if(sexeField) {
-                        normalizedSexe = sexeField.toString().trim().toUpperCase();
-                        if(normalizedSexe === 'M' || normalizedSexe === 'F') normalizedSexe = normalizedSexe;
-                        else if(normalizedSexe === 'MASCULIN') normalizedSexe = 'M';
-                        else if(normalizedSexe === 'FÉMININ' || normalizedSexe === 'FEMININ') normalizedSexe = 'F';
-                    }
-                    return {
-                        name: nameField.toString().trim(),
-                        sexe: normalizedSexe,
-                        count: 0,
-                        appreciations: []
-                    };
-                }).filter(s => s !== null && s.name !== "");
-                
-                if(formattedStudents.length === 0) return alert("Aucune donnée valide trouvée.");
-                appData.classes[name] = { students: formattedStudents, history: [] };
-                localStorage.setItem('designateur_data', JSON.stringify(appData));
-                showSuccessOverlay('rgba(25, 135, 84, 0.85)');
-                document.getElementById('classNameInput').value = "";
-                fileInput.value = "";
-                renderClassesList();
-                updateClassDropdown();
-                updateTotalStudentsHeader();
-            };
-            reader.readAsArrayBuffer(fileInput.files[0]);
-        }
-        
-        function renderClassesList() {
-            const listEl = document.getElementById('classesDisplayList');
-            listEl.innerHTML = "";
-            for(let name in appData.classes) {
-                listEl.innerHTML += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>${escapeHtml(name)}</strong> (${appData.classes[name].students.length} élèves)
-                            <button class="btn btn-sm btn-outline-info ms-2" onclick="selectAndViewStudents('${escapeHtml(name).replace(/'/g, "\\'")}')">📋 Voir élèves</button>
-                        </div>
-                        <button class="btn btn-danger btn-sm" onclick="deleteClassWithConfirm('${escapeHtml(name).replace(/'/g, "\\'")}')">Supprimer</button>
-                    </li>`;
-            }
-            updateTotalStudentsHeader();
-        }
-        
-        function selectAndViewStudents(className) {
-            currentClass = appData.classes[className];
-            currentClassName = className;
-            resetPool();
-            updateUI();
-            updateDesignButtonState();
-            openStudentModal();
-            document.getElementById('classSelect').value = className;
-        }
-        
-        function deleteClassWithConfirm(className) {
-            pendingDeleteClassName = className;
-            openSecretModal('deleteClass');
-        }
-        
-        function updateClassDropdown() {
-            const select = document.getElementById('classSelect');
-            select.innerHTML = '<option value="">-- Sélectionnez une Classe --</option>';
-            for(let name in appData.classes) {
-                select.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
-            }
-        }
-        
-        function loadClassData() {
-            stopAllTicks();
-            const className = document.getElementById('classSelect').value;
-            if(!className) {
-                currentClass = null;
-                currentClassName = null;
-                pool = [];
-                updateUI();
-                updateDesignButtonState();
-                document.getElementById('winner-name').innerText = "PRÊT ?";
-                document.getElementById('winner-name').style.color = '#0d6efd';
-                document.getElementById('winner-count').innerText = "";
-                updateAppreciationBadge(null);
-                return;
-            }
-            currentClass = appData.classes[className];
-            currentClassName = className;
-            if(currentClass) {
-                resetPool();
-                updateUI();
-                updateDesignButtonState();
-                if(currentClass.history && currentClass.history.length > 0) {
-                    const lastStudentName = currentClass.history[0];
-                    document.getElementById('stat-last').innerText = lastStudentName;
-                    updateAppreciationBadge(lastStudentName);
-                } else {
-                    document.getElementById('stat-last').innerText = "-";
-                    updateAppreciationBadge(null);
-                }
-            }
-        }
-        
-        function resetPool() {
-            if(!currentClass) return;
-            pool = currentClass.students.map(s => s.name);
-        }
-        
-        function updateUI() {
-            if(!currentClass) {
-                document.getElementById('stat-total').innerText = "0";
-                document.getElementById('stat-remaining').innerText = "0";
-                document.getElementById('stat-last').innerText = "-";
-                return;
-            }
-            document.getElementById('stat-total').innerText = currentClass.students.length;
-            document.getElementById('stat-remaining').innerText = pool.length;
-            const lastStudent = (currentClass.history && currentClass.history.length) ? currentClass.history[0] : "-";
-            document.getElementById('stat-last').innerText = lastStudent;
-        }
-        
-        async function pickStudent() {
-            if(isPicking) return;
-            if(!currentClass) return alert("Choisissez une classe d'abord");
-            if(pool.length === 0) {
-                alert("Tous les élèves sont passés ! Réinitialisation du cycle.");
-                resetPool();
-            }
-            if(pool.length === 0) return;
-            
-            isPicking = true;
-            const button = document.getElementById('designButton');
-            button.classList.add('btn-design-loading');
-            button.disabled = true;
-            
-            initAudio();
-            if (audioContext && audioContext.state === 'suspended') {
-                await audioContext.resume();
-            }
-            
-            const winnerElement = document.getElementById('winner-name');
-            const possibleNames = [...pool];
-            const scrollDuration = 800;
-            const scrollInterval = 30;
-            let scrollCount = 0;
-            const maxScrolls = scrollDuration / scrollInterval;
-            
-            let tickCount = 0;
-            tickInterval = setInterval(() => {
-                playTickSound();
-                tickCount++;
-                if (tickCount > maxScrolls + 3) stopAllTicks();
-            }, 45);
-            
-            const scrollIntervalId = setInterval(() => {
-                if (scrollCount < maxScrolls) {
-                    const randomName = possibleNames[Math.floor(Math.random() * possibleNames.length)];
-                    winnerElement.innerText = randomName;
-                    winnerElement.classList.add('name-scroll');
-                    setTimeout(() => winnerElement.classList.remove('name-scroll'), 30);
-                    scrollCount++;
-                } else {
-                    clearInterval(scrollIntervalId);
-                    const randomIndex = Math.floor(Math.random() * pool.length);
-                    const selectedName = pool.splice(randomIndex, 1)[0];
-                    winnerElement.innerText = selectedName;
-                    winnerElement.classList.remove('name-scroll');
-                    winnerElement.classList.add('winner-final');
-                    const student = currentClass.students.find(s => s.name === selectedName);
-                    if(student && student.sexe === 'F') winnerElement.style.color = '#dc3545';
-                    else winnerElement.style.color = '#0d6efd';
-                    playTimpaniSound();
-                    playFinalSound();
-                    if(!currentClass.history) currentClass.history = [];
-                    currentClass.history.unshift(selectedName);
-                    if(student) student.count++;
-                    const genderTag = (student && student.sexe) ? ` (${student.sexe})` : "";
-                    document.getElementById('winner-count').innerText = `Désigné ${student ? student.count : 0} fois${genderTag}`;
-                    updateAppreciationBadge(selectedName);
-                    localStorage.setItem('designateur_data', JSON.stringify(appData));
-                    updateUI();
-                    setTimeout(() => winnerElement.classList.remove('winner-final'), 500);
-                    button.classList.remove('btn-design-loading');
-                    updateDesignButtonState();
-                    isPicking = false;
-                }
-            }, scrollInterval);
-        }
-        
-        function resetSession() {
-            stopAllTicks();
-            if(currentClass) {
-                resetPool();
-                if(currentClass.history) currentClass.history = [];
-                updateUI();
-                document.getElementById('winner-name').innerText = "PRÊT ?";
-                document.getElementById('winner-name').style.color = '#0d6efd';
-                document.getElementById('winner-count').innerText = "";
-                updateAppreciationBadge(null);
-                localStorage.setItem('designateur_data', JSON.stringify(appData));
-            }
-        }
-        
-        // Initialisation
-        updateClassDropdown();
-        renderClassesList();
-        updateDesignButtonState();
-        updateTotalStudentsHeader();
-        
+
+        // PWA: Service Worker registration
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').catch(err => console.error('Erreur SW:', err));
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }).catch(function(error) {
+                    console.log('ServiceWorker registration failed: ', error);
+                });
+            });
         }
+
+        window.onload = calculateStats;
     </script>
 </body>
 </html>

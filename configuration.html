@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Configuration - Designateur</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="dataManager.js"></script>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00bc8c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Designateur">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <style>
+        :root {
+            --primary-color: #375a7f;
+            --secondary-color: #00bc8c;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --bg-dark: #222222;
+            --card-dark: #303030;
+            --text-light: #ebebeb;
+        }
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-light);
+            padding-bottom: 80px; 
+        }
+        
+        .navbar { background-color: #1a1a1a !important; border-bottom: 1px solid #333; }
+        .navbar-brand { color: var(--secondary-color) !important; }
+        .navbar-nav .nav-link { color: #ccc !important; }
+        .navbar-nav .nav-link.active { color: var(--secondary-color) !important; font-weight: 700; }
+
+        /* Modal Élèves élégante Dark */
+        .student-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10003;
+        }
+        .student-modal-content {
+            background: var(--card-dark);
+            border-radius: 25px;
+            width: 90%; max-width: 800px;
+            max-height: 85vh; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid #444;
+        }
+        .student-modal-header {
+            background: var(--primary-color);
+            color: white; padding: 20px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .student-modal-body { padding: 25px; max-height: 60vh; overflow-y: auto; color: var(--text-light); }
+        
+        .stat-card {
+            background: #3d3d3d; border-radius: 15px;
+            padding: 15px; text-align: center; flex: 1;
+            min-width: 100px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border: 1px solid #555;
+        }
+        .stat-number { font-size: 2rem; font-weight: bold; color: var(--secondary-color); }
+        
+        .student-list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; border-bottom: 1px solid #444;
+        }
+
+        /* Secret Modal */
+        .secret-confirm-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none;
+            justify-content: center; align-items: center; z-index: 10005;
+        }
+        .secret-confirm-content {
+            background: var(--card-dark); border-radius: 20px; padding: 30px;
+            text-align: center; max-width: 350px; width: 90%; border: 1px solid #555;
+        }
+
+        #success-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 188, 140, 0.85); display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10010; color: white;
+        }
+
+        .card { background-color: var(--card-dark); border: 1px solid #444; color: var(--text-light); }
+        .list-group-item { background-color: var(--card-dark); border-color: #444; color: var(--text-light); }
+        .form-control, .form-select { background-color: #3d3d3d; border-color: #555; color: white; }
+        .form-control:focus, .form-select:focus { background-color: #444; color: white; border-color: var(--secondary-color); box-shadow: none; }
+        
+        .footer-credits {
+            margin-top: 40px; 
+            font-size: 0.85rem; 
+            color: #888; 
+            padding: 20px;
+            border-top: 1px solid #444;
+            text-align: center;
+        }
+        .badge.bg-white { color: var(--bg-dark) !important; background-color: var(--text-light) !important; }
+    </style>
+</head>
+<body>
+
+    <div id="success-overlay">
+        <div class="text-center">
+            <div class="display-1">✅</div>
+            <h2 class="fw-bold">Action effectuée !</h2>
+        </div>
+    </div>
+
+    <div id="secretConfirmModal" class="secret-confirm-modal">
+        <div class="secret-confirm-content">
+            <h3 class="mb-3 text-white">⚠️ Confirmation</h3>
+            <input type="password" id="secretCodeInput" class="form-control text-center mb-3" placeholder="Code PIN" maxlength="5">
+            <div class="d-flex gap-2">
+                <button onclick="validateSecretCode()" class="btn btn-danger flex-grow-1">Valider</button>
+                <button onclick="closeSecretModal()" class="btn btn-secondary flex-grow-1">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="studentModal" class="student-modal">
+        <div class="student-modal-content">
+            <div class="student-modal-header">
+                <h4 class="mb-0">Détails de la classe</h4>
+                <button class="btn-close btn-close-white" onclick="closeStudentModal()"></button>
+            </div>
+            <div class="student-modal-body">
+                <div id="statsContainer" class="d-flex gap-3 mb-4"></div>
+                
+                <div class="p-3 bg-dark rounded-3 mb-4 border border-secondary">
+                    <h6 class="text-secondary">➕ Ajouter manuellement</h6>
+                    <div class="row g-2">
+                        <div class="col-8"><input type="text" id="newStudentName" class="form-control" placeholder="Nom complet"></div>
+                        <div class="col-2">
+                            <select id="newStudentSexe" class="form-select">
+                                <option value="M">M</option>
+                                <option value="F">F</option>
+                            </select>
+                        </div>
+                        <div class="col-2"><button class="btn btn-success w-100" onclick="addNewStudent()">OK</button></div>
+                    </div>
+                </div>
+                
+                <div id="studentsListContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand fw-bold mb-0" href="index.html" style="color: var(--secondary-color);">DESIGNATEUR 🇧🇯</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="designer.html">Désignation</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="configuration.html">Configuration</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white fw-bold">Créer une nouvelle classe</div>
+                    <div class="card-body">
+                        <div class="alert alert-info py-2 mb-3" style="font-size: 0.85rem; border-left: 4px solid var(--secondary-color);">
+                            <strong>Structure du fichier Excel :</strong><br>
+                            • Onglet nommé : <code class="text-white">Sheet1</code><br>
+                            • Colonne A : <code class="text-white">Nom Prénoms</code><br>
+                            • Colonne B : <code class="text-white">Sexe</code> (M ou F)
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nom de la Classe :</label>
+                            <input type="text" id="classNameInput" class="form-control" placeholder="Ex: 3ème PCT">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Fichier Excel (.xlsx) :</label>
+                            <input type="file" id="excelInput" class="form-control" accept=".xlsx, .xls">
+                        </div>
+                        <button class="btn btn-success w-100 fw-bold" onclick="saveClass()">Importer et Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-dark text-white fw-bold">Classes enregistrées</div>
+                    <ul class="list-group list-group-flush" id="classesDisplayList">
+                        </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-credits">
+            Concepteur : <strong>Atizoun Plateny AMOUSSOU</strong><br>
+            Email : atizoun@gmail.com | Tél : 01 97 74 40 35
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let appData = (typeof DataManager !== 'undefined') ? DataManager.load() : (JSON.parse(localStorage.getItem('designateur_data')) || { classes: {} });
+        let currentClass = null;
+        let currentClassName = null;
+        let pendingAction = null;
+        let pendingData = null;
+        const SECRET_CODE = "11984";
+
+        function showSuccessOverlay() {
+            const el = document.getElementById('success-overlay');
+            el.style.display = 'flex';
+            setTimeout(() => { el.style.display = 'none'; }, 1200);
+        }
+
+        function persistData() {
+            if(typeof DataManager !== 'undefined') {
+                DataManager.save(appData);
+            } else {
+                localStorage.setItem('designateur_data', JSON.stringify(appData));
+            }
+        }
+
+        // --- GESTION DES CLASSES ---
+        function saveClass() {
+            const nameInput = document.getElementById('classNameInput');
+            const fileInput = document.getElementById('excelInput');
+            const name = nameInput.value.trim();
+            
+            if(!name) { alert("Veuillez saisir un nom de classe."); return; }
+            if(!fileInput.files || fileInput.files.length === 0) { alert("Veuillez sélectionner un fichier Excel."); return; }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // Correction critique : gestion correcte du nom de l'onglet
+                    let targetSheet = null;
+                    if (workbook.SheetNames.includes("Sheet1")) {
+                        targetSheet = "Sheet1";
+                    } else if (workbook.SheetNames.length > 0) {
+                        targetSheet = workbook.SheetNames[0];
+                    }
+                    
+                    if (!targetSheet) throw new Error("Aucun onglet trouvé dans le fichier Excel.");
+                    
+                    const worksheet = workbook.Sheets[targetSheet];
+                    if(!worksheet) throw new Error("Impossible de lire l'onglet : " + targetSheet);
+
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    if(!jsonData || jsonData.length === 0) throw new Error("Le fichier semble vide ou mal formaté.");
+
+                    const students = [];
+                    
+                    for(let i = 0; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        // Récupération souple des colonnes
+                        let rawName = null;
+                        let rawSexe = null;
+                        
+                        // Chercher la colonne du nom
+                        const nameKeys = ['Nom Prénoms', 'NOM_PRENOMS', 'Nom', 'NOM', 'nom', 'Nom_Prenoms', 'nom_prenoms'];
+                        for(let key of nameKeys) {
+                            if(row[key] !== undefined && row[key] !== null && row[key].toString().trim() !== "") {
+                                rawName = row[key];
+                                break;
+                            }
+                        }
+                        
+                        // Si aucun match avec les clés prédéfinies, prendre la première colonne
+                        if(!rawName) {
+                            const firstKey = Object.keys(row)[0];
+                            if(firstKey) rawName = row[firstKey];
+                        }
+                        
+                        // Chercher la colonne du sexe
+                        const sexeKeys = ['Sexe', 'SEXE', 'sexe', 'Genre', 'GENRE', 'genre'];
+                        for(let key of sexeKeys) {
+                            if(row[key] !== undefined && row[key] !== null) {
+                                rawSexe = row[key];
+                                break;
+                            }
+                        }
+                        
+                        if(rawName && rawName.toString().trim() !== "") {
+                            let sexeValue = "M";
+                            if(rawSexe) {
+                                const sexeStr = rawSexe.toString().trim().toUpperCase();
+                                if(sexeStr === "F" || sexeStr === "FÉMININ" || sexeStr === "FEMININ") {
+                                    sexeValue = "F";
+                                } else {
+                                    sexeValue = "M";
+                                }
+                            }
+                            
+                            students.push({
+                                name: rawName.toString().trim(),
+                                sexe: sexeValue,
+                                count: 0, 
+                                appreciations: [],
+                                absent: false
+                            });
+                        }
+                    }
+
+                    if(students.length === 0) throw new Error("Aucun élève valide n'a pu être extrait.");
+
+                    // Structure de données synchronisée avec index.html
+                    appData.classes[name] = { 
+                        students: students, 
+                        history: [] 
+                    };
+                    
+                    persistData();
+                    renderClasses();
+                    showSuccessOverlay();
+                    
+                    // Reset des champs du formulaire
+                    nameInput.value = "";
+                    fileInput.value = "";
+                } catch (err) {
+                    console.error("Erreur détaillée :", err);
+                    alert("Erreur : " + err.message);
+                }
+            };
+            
+            reader.onerror = () => alert("Erreur de lecture du fichier.");
+            reader.readAsArrayBuffer(fileInput.files[0]);
+        }
+
+        function renderClasses() {
+            const list = document.getElementById('classesDisplayList');
+            if(!list) return;
+            list.innerHTML = "";
+            const keys = Object.keys(appData.classes);
+            
+            if(keys.length === 0) {
+                list.innerHTML = `<li class="list-group-item text-center text-muted p-4">Aucune classe enregistrée.</li>`;
+                return;
+            }
+
+            for(let name in appData.classes) {
+                list.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <div>
+                            <span class="fw-bold text-uppercase" style="color: var(--secondary-color);">${escapeHtml(name)}</span> 
+                            <small class="text-muted ms-2">(${appData.classes[name].students.length} élèves)</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="openManager('${escapeHtml(name).replace(/'/g, "\\'")}')">Gérer</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="askDeleteClass('${escapeHtml(name).replace(/'/g, "\\'")}')">Supprimer</button>
+                        </div>
+                    </li>`;
+            }
+        }
+        
+        function escapeHtml(str) {
+            if(!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if(m === '&') return '&amp;';
+                if(m === '<') return '&lt;';
+                if(m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function openManager(name) {
+            currentClassName = name;
+            currentClass = appData.classes[name];
+            renderStudents();
+            document.getElementById('studentModal').style.display = 'flex';
+        }
+
+        function renderStudents() {
+            const container = document.getElementById('studentsListContainer');
+            const stats = document.getElementById('statsContainer');
+            if(!currentClass) return;
+            const students = currentClass.students;
+
+            stats.innerHTML = `
+                <div class="stat-card"><div class="stat-number">${students.length}</div>Total</div>
+                <div class="stat-card"><div class="stat-number">${students.filter(s=>s.sexe==='F').length}</div>Filles</div>
+            `;
+
+            container.innerHTML = students.map((s, i) => `
+                <div class="student-list-item">
+                    <span>${escapeHtml(s.name)} <small class="badge bg-secondary ms-2">${s.sexe}</small></span>
+                    <button class="btn btn-sm text-danger" onclick="deleteStudent(${i})">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        function addNewStudent() {
+            const name = document.getElementById('newStudentName').value.trim();
+            const sexe = document.getElementById('newStudentSexe').value;
+            if(!name) return;
+            currentClass.students.push({name, sexe, count:0, appreciations:[], absent: false});
+            saveAndRefresh();
+            document.getElementById('newStudentName').value = "";
+        }
+
+        function deleteStudent(index) {
+            if(confirm("Supprimer cet élève ?")) {
+                currentClass.students.splice(index, 1);
+                saveAndRefresh();
+            }
+        }
+
+        function saveAndRefresh() {
+            persistData();
+            renderStudents();
+            renderClasses();
+        }
+
+        function askDeleteClass(name) {
+            pendingAction = 'deleteClass';
+            pendingData = name;
+            document.getElementById('secretCodeInput').value = "";
+            document.getElementById('secretConfirmModal').style.display = 'flex';
+        }
+
+        function validateSecretCode() {
+            const inputCode = document.getElementById('secretCodeInput').value;
+            if(inputCode === SECRET_CODE) {
+                if(pendingAction === 'deleteClass' && pendingData) {
+                    delete appData.classes[pendingData];
+                    persistData();
+                    renderClasses();
+                    
+                    // Si la classe supprimée était celle actuellement ouverte, fermer le modal
+                    if(currentClassName === pendingData) {
+                        closeStudentModal();
+                        currentClass = null;
+                        currentClassName = null;
+                    }
+                }
+                closeSecretModal();
+                showSuccessOverlay();
+                pendingAction = null;
+                pendingData = null;
+            } else { 
+                alert("Code PIN erroné"); 
+                document.getElementById('secretCodeInput').value = "";
+            }
+        }
+
+        function closeSecretModal() { 
+            document.getElementById('secretConfirmModal').style.display = 'none';
+            pendingAction = null;
+            pendingData = null;
+        }
+        
+        function closeStudentModal() { 
+            document.getElementById('studentModal').style.display = 'none';
+            currentClass = null;
+            currentClassName = null;
+        }
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js').then(function(registration) {
+                    console.log('ServiceWorker enregistré avec succès:', registration.scope);
+                }).catch(function(error) {
+                    console.log('Échec d\'enregistrement du ServiceWorker:', error);
+                });
+            });
+        }
+
+        // Initialisation au chargement
+        window.onload = function() {
+            renderClasses();
+        };
+    </script>
+</body>
+</html>
