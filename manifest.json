@@ -1,12 +1,11 @@
 {
   "name": "Designateur Pro",
   "short_name": "Designateur",
-  "description": "Application de désignation aléatoire d'élèves pour les enseignants.",
+  "description": "Application de désignation aléatoire d'élèves pour le Prof Plateny",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#222222",
   "theme_color": "#375a7f",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "logoapp.png",
@@ -17,8 +16,7 @@
     {
       "src": "logoapp.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     }
   ]
 }

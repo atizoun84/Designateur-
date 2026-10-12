@@ -16,14 +16,26 @@
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     
     <style>
-        :root {
-            --primary-color: #375a7f;
-            --secondary-color: #00bc8c;
-            --danger-color: #e74c3c;
-            --warning-color: #f39c12;
-            --bg-dark: #222222;
-            --card-dark: #303030;
-            --text-light: #ebebeb;
+                :root {
+            /* ═══ Win95 Light Theme ═══ */
+            --primary-color: #000080;      /* Bleu marine (barre titre) */
+            --secondary-color: #008080;    /* Turquoise Win95 */
+            --danger-color: #c0392b;       /* Rouge foncé */
+            --warning-color: #d4a017;      /* Jaune foncé */
+            --bg-dark: #ececec;            /* Gris clair (fond) */
+            --card-dark: #f5f5f5;          /* Presque blanc (cartes) */
+            --text-light: #1a1a1a;         /* Noir doux (texte) */
+            --boy-color: #000080;          /* Bleu marine */
+            --girl-color: #a4006c;         /* Magenta foncé */
+            /* ═══ Win95 supplémentaires ═══ */
+            --win95-btn: #d4d0c8;
+            --win95-btn-light: #ffffff;
+            --win95-btn-dark: #808080;
+            --win95-border: #808080;
+            --win95-titlebar: #000080;
+            --win95-titlebar-text: #ffffff;
+            --win95-input-bg: #ffffff;
+            --win95-input-border: #808080;
         }
         body { 
             background-color: var(--bg-dark); 
@@ -31,19 +43,47 @@
             padding-bottom: 80px; 
         }
         
+        /* ═══ BOUTON DÉSIGNER EN FORME DE CŒUR QUI BAT ═══ */
         .btn-design {
             width: 180px;
             height: 180px;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 1.1rem;
+            border-radius: 50% !important;
+            font-weight: 900 !important;
+            font-size: 1.15rem !important;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            box-shadow: 0 10px 20px rgba(0, 188, 140, 0.2);
-            transition: transform 0.2s;
-            border: 4px solid var(--secondary-color);
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+            color: #ffffff !important;
+            border: 5px solid #ffffff !important;
+            box-shadow: 0 0 0 3px #e74c3c, 0 10px 25px rgba(231, 76, 60, 0.5) !important;
+            transition: none !important;
+            animation: heartBeat 1.3s ease-in-out infinite;
+            position: relative;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
         }
-        .btn-design:active { transform: scale(0.95); }
-        .btn-design:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-design:hover:not(:disabled) {
+            background: linear-gradient(135deg, #ff5c5c 0%, #e74c3c 100%) !important;
+        }
+        .btn-design:active:not(:disabled) {
+            animation: none;
+            transform: scale(0.9);
+        }
+        .btn-design:disabled {
+            opacity: 0.35 !important;
+            cursor: not-allowed !important;
+            animation: none !important;
+            background: #888 !important;
+            box-shadow: none !important;
+            border-color: #ccc !important;
+        }
+        @keyframes heartBeat {
+            0%   { transform: scale(1);    box-shadow: 0 0 0 3px #e74c3c, 0 10px 25px rgba(231, 76, 60, 0.5); }
+            14%  { transform: scale(1.15); box-shadow: 0 0 0 6px #e74c3c, 0 15px 35px rgba(231, 76, 60, 0.7); }
+            28%  { transform: scale(1);    box-shadow: 0 0 0 3px #e74c3c, 0 10px 25px rgba(231, 76, 60, 0.5); }
+            42%  { transform: scale(1.15); box-shadow: 0 0 0 6px #e74c3c, 0 15px 35px rgba(231, 76, 60, 0.7); }
+            70%  { transform: scale(1);    box-shadow: 0 0 0 3px #e74c3c, 0 10px 25px rgba(231, 76, 60, 0.5); }
+            100% { transform: scale(1);    box-shadow: 0 0 0 3px #e74c3c, 0 10px 25px rgba(231, 76, 60, 0.5); }
+        }
         
         .result-box {
             border: 4px solid var(--primary-color);
@@ -59,7 +99,7 @@
         
         .result-box:hover { transform: scale(1.02); border-color: var(--secondary-color); }
 
-        .text-muted { color: #aaaaaa !important; }
+        .text-muted { color: #ffd700 !important; }
         .bg-white { background-color: var(--card-dark) !important; color: var(--text-light) !important; }
         .form-select { background-color: var(--card-dark); color: white; border-color: #444; }
         .form-select:focus { background-color: #3d3d3d; color: white; }
@@ -132,6 +172,700 @@
         .navbar-nav .nav-link.active { color: var(--secondary-color) !important; font-weight: 700; }
         
         .badge.bg-white { color: var(--bg-dark) !important; background-color: var(--text-light) !important; }
+    
+        /* ═══════════════════════════════════════════════════════
+           STYLE WINDOWS 95 LIGHT
+           ═══════════════════════════════════════════════════════ */
+
+        /* Police système Win95 */
+        body, button, input, select, textarea {
+            font-family: 'Tahoma', 'MS Sans Serif', 'Verdana', sans-serif !important;
+            font-size: 13px;
+        }
+
+        /* Barre de navigation style Win95 */
+        .navbar {
+            background: #000080 !important;
+            border-bottom: 2px solid #808080 !important;
+            border-radius: 0 !important;
+            padding: 4px 8px !important;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+        }
+        .navbar-brand {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .navbar-nav .nav-link {
+            color: #ffffff !important;
+            padding: 4px 10px !important;
+            border: 1px solid transparent;
+            border-radius: 0 !important;
+        }
+        .navbar-nav .nav-link:hover {
+            background: #1084d0 !important;
+            border: 1px solid #ffffff !important;
+        }
+        .navbar-nav .nav-link.active {
+            background: #ffffff !important;
+            color: #000080 !important;
+            border: 1px solid #808080 !important;
+            box-shadow: inset 1px 1px 0 #808080;
+        }
+
+        /* Cartes : effet fenêtre Win95 */
+        .stat-card-global,
+        .class-summary-card,
+        .card {
+            background: #f5f5f5 !important;
+            border: 1px solid #808080 !important;
+            border-top: 1px solid #ffffff !important;
+            border-left: 1px solid #ffffff !important;
+            border-radius: 0 !important;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.15) !important;
+        }
+        .card-header {
+            background: #000080 !important;
+            color: #ffffff !important;
+            padding: 4px 10px !important;
+            border-radius: 0 !important;
+            font-weight: 700 !important;
+            border-bottom: 1px solid #808080 !important;
+        }
+        .class-summary-header {
+            background: #000080 !important;
+            color: #ffffff !important;
+            border-radius: 0 !important;
+            padding: 6px 12px !important;
+        }
+
+        /* Boutons 3D Win95 */
+        button, .btn {
+            background: #d4d0c8 !important;
+            color: #000000 !important;
+            border: 1px solid #808080 !important;
+            border-top: 1px solid #ffffff !important;
+            border-left: 1px solid #ffffff !important;
+            border-radius: 0 !important;
+            padding: 5px 12px !important;
+            font-weight: 600 !important;
+            box-shadow: inset -1px -1px 0 #404040;
+            transition: none !important;
+        }
+        button:hover, .btn:hover {
+            background: #e4e0d8 !important;
+            transform: none !important;
+        }
+        button:active, .btn:active {
+            border: 1px solid #ffffff !important;
+            border-top: 1px solid #808080 !important;
+            border-left: 1px solid #808080 !important;
+            box-shadow: inset 1px 1px 0 #404040;
+            padding: 6px 11px 4px 13px !important;
+        }
+
+        /* Boutons colorés (gardent leur rôle) */
+        .btn-primary {
+            background: #000080 !important;
+            color: #ffffff !important;
+            border-top: 1px solid #4a4aff !important;
+            border-left: 1px solid #4a4aff !important;
+            border-right: 1px solid #000040 !important;
+            border-bottom: 1px solid #000040 !important;
+        }
+        .btn-primary:hover { background: #1a1a9e !important; }
+        .btn-success { background: #008000 !important; color: #ffffff !important; }
+        .btn-danger { background: #a40000 !important; color: #ffffff !important; }
+        .btn-warning { background: #d4a017 !important; color: #000000 !important; }
+
+        /* Champs de saisie en creux */
+        input, select, textarea, .form-control, .form-select {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #808080 !important;
+            border-top: 1px solid #404040 !important;
+            border-left: 1px solid #404040 !important;
+            border-right: 1px solid #d4d0c8 !important;
+            border-bottom: 1px solid #d4d0c8 !important;
+            border-radius: 0 !important;
+            padding: 4px 6px !important;
+            box-shadow: inset 1px 1px 0 #c0c0c0;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: 1px dotted #000080 !important;
+            outline-offset: 0;
+        }
+
+        /* Plaquettes statistiques */
+        .stat-number-big {
+            color: #000080 !important;
+            font-weight: 800 !important;
+        }
+        .stat-label {
+            color: #404040 !important;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Suppression des coins arrondis partout */
+        * {
+            border-radius: 0 !important;
+        }
+
+        /* Séparateurs */
+        hr {
+            border: none !important;
+            border-top: 1px solid #808080 !important;
+            border-bottom: 1px solid #ffffff !important;
+            margin: 8px 0 !important;
+        }
+
+        /* Tableaux Win95 */
+        table {
+            border-collapse: collapse !important;
+            background: #ffffff;
+        }
+        th {
+            background: #d4d0c8 !important;
+            color: #000000 !important;
+            border: 1px solid #808080 !important;
+            border-top: 1px solid #ffffff !important;
+            border-left: 1px solid #ffffff !important;
+            padding: 5px 8px !important;
+            font-weight: 700 !important;
+        }
+        td {
+            border: 1px solid #c0c0c0 !important;
+            padding: 4px 8px !important;
+        }
+
+        /* Barres de défilement (navigateurs Webkit) */
+        ::-webkit-scrollbar {
+            width: 16px;
+            height: 16px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #d4d0c8;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c0c0c0;
+            border: 1px solid #808080;
+            border-top: 1px solid #ffffff;
+            border-left: 1px solid #ffffff;
+        }
+        ::-webkit-scrollbar-button {
+            background: #d4d0c8;
+            border: 1px solid #808080;
+            height: 16px;
+            width: 16px;
+        }
+
+        /* ═══ BOUTONS NAVBAR — COULEUR JAUNE WIN95 ═══ */
+        .navbar-nav .nav-link {
+            color: #ffd700 !important;
+            font-weight: 700 !important;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #000080 !important;
+            background: #ffd700 !important;
+            border: 1px solid #ffffff !important;
+        }
+        .navbar-nav .nav-link.active {
+            color: #000000 !important;
+            background: #ffd700 !important;
+            border: 1px solid #808080 !important;
+            box-shadow: inset 1px 1px 0 #808080 !important;
+            font-weight: 900 !important;
+        }
+
+
+        /* ═══ ZONE ÉLÈVE DÉSIGNÉ — CONTRASTE AMÉLIORÉ ═══ */
+        .result-box {
+            border: 4px solid #ffd700 !important;
+            min-height: 180px !important;
+            border-radius: 0 !important;
+            background: linear-gradient(135deg, #000080 0%, #000040 100%) !important;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+        }
+        .result-box:hover {
+            border-color: #ffff00 !important;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 215, 0, 0.6) !important;
+        }
+        .result-box #winner-name {
+            color: #ffffff !important;
+            font-size: 2.5rem !important;
+            font-weight: 900 !important;
+            letter-spacing: 1.5px !important;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 215, 0, 0.4) !important;
+            line-height: 1.1 !important;
+        }
+        .result-box #winner-count {
+            color: #ffd700 !important;
+            font-size: 1rem !important;
+            font-weight: 600 !important;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8) !important;
+            letter-spacing: 1px !important;
+        }
+
+        /* ═══ FIN STYLE WIN95 ═══ */
+
+
+        /* ═══════════════════════════════════════════════════════
+           THÈME SOFT MODERN — Remplace Win95
+           ═══════════════════════════════════════════════════════ */
+
+        /* Palette moderne apaisante */
+        :root {
+            --primary-color: #6366f1 !important;      /* Indigo doux */
+            --secondary-color: #10b981 !important;    /* Émeraude */
+            --danger-color: #ef4444 !important;       /* Rouge doux */
+            --warning-color: #f59e0b !important;      /* Ambre */
+            --bg-dark: #f5f7fa !important;            /* Fond clair */
+            --card-dark: #ffffff !important;          /* Cartes blanches */
+            --text-light: #1f2937 !important;         /* Texte foncé */
+            --boy-color: #3b82f6 !important;          /* Bleu doux */
+            --girl-color: #ec4899 !important;         /* Rose */
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --border-color: #e5e7eb;
+        }
+
+        /* Body : dégradé apaisant */
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%) !important;
+            color: #1f2937 !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            font-size: 14px !important;
+            min-height: 100vh;
+        }
+
+        /* ── ARRONDIS PARTOUT ── */
+        button, .btn, input, select, textarea, .form-control, .form-select {
+            border-radius: 10px !important;
+        }
+        .card, .stat-card-global, .class-summary-card, .result-box {
+            border-radius: 16px !important;
+        }
+        img, table {
+            border-radius: 12px !important;
+        }
+        .navbar {
+            border-radius: 0 0 16px 16px !important;
+        }
+        .modal-content {
+            border-radius: 20px !important;
+            overflow: hidden;
+        }
+        .alert {
+            border-radius: 12px !important;
+        }
+        .badge, .pill {
+            border-radius: 999px !important;
+        }
+
+        /* ── NAVBAR moderne ── */
+        .navbar {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            border-bottom: none !important;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25) !important;
+            padding: 10px 16px !important;
+        }
+        .navbar-brand {
+            color: #ffffff !important;
+            font-weight: 800 !important;
+            font-size: 1.15rem !important;
+            letter-spacing: -0.3px;
+        }
+        .navbar-nav .nav-link {
+            color: rgba(255,255,255,0.85) !important;
+            font-weight: 600 !important;
+            padding: 8px 16px !important;
+            border-radius: 10px !important;
+            transition: all 0.2s ease !important;
+            margin: 0 2px !important;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+            background: rgba(255,255,255,0.15) !important;
+        }
+        .navbar-nav .nav-link.active {
+            color: #4f46e5 !important;
+            background: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+        .navbar-toggler {
+            border: 1px solid rgba(255,255,255,0.4) !important;
+            border-radius: 8px !important;
+        }
+
+        /* ── CARTES douces ── */
+        .card,
+        .stat-card-global,
+        .class-summary-card {
+            background: #ffffff !important;
+            border: 1px solid #e5e7eb !important;
+            border-radius: 16px !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04) !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+            color: #1f2937 !important;
+        }
+        .card:hover,
+        .stat-card-global:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08) !important;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%) !important;
+            color: #1f2937 !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            border-radius: 16px 16px 0 0 !important;
+            padding: 14px 18px !important;
+            font-weight: 700 !important;
+        }
+        .class-summary-header {
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%) !important;
+            color: #3730a3 !important;
+            border-radius: 16px 16px 0 0 !important;
+            padding: 12px 16px !important;
+            border-bottom: 1px solid #c7d2fe !important;
+        }
+
+        /* ── BOUTONS modernes ── */
+        button, .btn {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 10px !important;
+            padding: 9px 18px !important;
+            font-weight: 600 !important;
+            font-size: 0.9rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+        }
+        button:hover, .btn:hover {
+            background: #f9fafb !important;
+            border-color: #9ca3af !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+        }
+        button:active, .btn:active {
+            transform: scale(0.98);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3) !important;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4) !important;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+        .btn-outline-primary { color: #6366f1 !important; border-color: #6366f1 !important; }
+        .btn-outline-success { color: #10b981 !important; border-color: #10b981 !important; }
+        .btn-outline-danger  { color: #ef4444 !important; border-color: #ef4444 !important; }
+        .btn-outline-warning { color: #f59e0b !important; border-color: #f59e0b !important; }
+        .btn-outline-secondary { color: #6b7280 !important; border-color: #d1d5db !important; }
+
+        /* ── FORMULAIRES modernes ── */
+        input, select, textarea, .form-control, .form-select {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 10px !important;
+            padding: 10px 14px !important;
+            font-size: 0.9rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+        }
+        input:focus, select:focus, textarea:focus, .form-control:focus, .form-select:focus {
+            border-color: #6366f1 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+        }
+        .form-select-lg {
+            font-size: 1rem !important;
+            padding: 12px 16px !important;
+        }
+
+        /* ── TABLEAU moderne ── */
+        table {
+            background: #ffffff !important;
+            border-radius: 16px !important;
+            overflow: hidden;
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+        }
+        th {
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%) !important;
+            color: #3730a3 !important;
+            border: none !important;
+            border-bottom: 2px solid #c7d2fe !important;
+            padding: 12px 10px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.8rem !important;
+        }
+        td {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+            border: none !important;
+            border-bottom: 1px solid #f3f4f6 !important;
+            padding: 12px 10px !important;
+            font-weight: 600 !important;
+        }
+        tr:last-child td {
+            border-bottom: none !important;
+        }
+        tbody tr:hover td {
+            background: #f9fafb !important;
+        }
+
+        /* Forcer les classes colorées avec de nouvelles teintes douces */
+        .text-boy {
+            color: #3b82f6 !important;
+            font-weight: 800 !important;
+        }
+        .text-girl {
+            color: #ec4899 !important;
+            font-weight: 800 !important;
+        }
+        .text-danger {
+            color: #ef4444 !important;
+        }
+        .text-white {
+            color: #1f2937 !important;
+        }
+        .text-muted, .text-secondary {
+            color: #6b7280 !important;
+        }
+
+        /* ── ZONE ÉLÈVE DÉSIGNÉ (result-box) ── */
+        .result-box {
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%) !important;
+            border: 2px solid #c7d2fe !important;
+            border-radius: 20px !important;
+            min-height: 180px !important;
+            box-shadow: inset 0 1px 3px rgba(99, 102, 241, 0.08), 0 4px 16px rgba(99, 102, 241, 0.1) !important;
+            transition: all 0.25s ease !important;
+        }
+        .result-box:hover {
+            transform: scale(1.02);
+            border-color: #6366f1 !important;
+            box-shadow: inset 0 1px 3px rgba(99, 102, 241, 0.1), 0 8px 24px rgba(99, 102, 241, 0.2) !important;
+        }
+        .result-box #winner-name {
+            color: #3730a3 !important;
+            font-size: 2.4rem !important;
+            font-weight: 900 !important;
+            letter-spacing: -0.5px !important;
+            line-height: 1.1 !important;
+            text-shadow: 0 2px 4px rgba(99, 102, 241, 0.15) !important;
+        }
+        .result-box #winner-count {
+            color: #6366f1 !important;
+            font-weight: 600 !important;
+            font-size: 1rem !important;
+        }
+
+        /* ── BOUTON CŒUR (DÉSIGNER) ── */
+        .btn-design {
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
+            color: #ffffff !important;
+            border: 4px solid #ffffff !important;
+            border-radius: 50% !important;
+            width: 180px !important;
+            height: 180px !important;
+            font-weight: 900 !important;
+            font-size: 1.1rem !important;
+            letter-spacing: 2px;
+            box-shadow: 0 0 0 3px #f43f5e, 0 10px 30px rgba(244, 63, 94, 0.4) !important;
+            animation: heartBeatSoft 1.4s ease-in-out infinite !important;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        .btn-design:hover:not(:disabled) {
+            background: linear-gradient(135deg, #fb7185 0%, #f43f5e 100%) !important;
+        }
+        .btn-design:active:not(:disabled) {
+            animation: none !important;
+            transform: scale(0.9);
+        }
+        .btn-design:disabled {
+            background: #d1d5db !important;
+            box-shadow: none !important;
+            border-color: #e5e7eb !important;
+            opacity: 0.5 !important;
+            animation: none !important;
+        }
+        @keyframes heartBeatSoft {
+            0%   { transform: scale(1);    box-shadow: 0 0 0 3px #f43f5e, 0 10px 30px rgba(244, 63, 94, 0.4); }
+            14%  { transform: scale(1.12); box-shadow: 0 0 0 8px rgba(244, 63, 94, 0.5), 0 15px 40px rgba(244, 63, 94, 0.6); }
+            28%  { transform: scale(1);    box-shadow: 0 0 0 3px #f43f5e, 0 10px 30px rgba(244, 63, 94, 0.4); }
+            42%  { transform: scale(1.12); box-shadow: 0 0 0 8px rgba(244, 63, 94, 0.5), 0 15px 40px rgba(244, 63, 94, 0.6); }
+            70%  { transform: scale(1);    box-shadow: 0 0 0 3px #f43f5e, 0 10px 30px rgba(244, 63, 94, 0.4); }
+            100% { transform: scale(1);    box-shadow: 0 0 0 3px #f43f5e, 0 10px 30px rgba(244, 63, 94, 0.4); }
+        }
+
+        /* ── STATISTIQUES (plaquettes) ── */
+        .stat-number-big {
+            color: #6366f1 !important;
+            font-weight: 800 !important;
+            font-size: 1.5rem !important;
+        }
+        .stat-label {
+            color: #6b7280 !important;
+            font-weight: 600 !important;
+            text-transform: uppercase;
+            font-size: 0.7rem !important;
+            letter-spacing: 0.8px;
+        }
+
+        /* ── SÉPARATEURS ── */
+        hr {
+            border: none !important;
+            border-top: 1px solid #e5e7eb !important;
+            margin: 16px 0 !important;
+        }
+
+        /* ── SCROLLBARS modernes ── */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 999px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+            background-clip: padding-box;
+        }
+
+        /* ── ALERTES ── */
+        .alert-info {
+            background: #eff6ff !important;
+            color: #1e40af !important;
+            border: 1px solid #bfdbfe !important;
+            border-radius: 12px !important;
+        }
+        .alert-warning {
+            background: #fffbeb !important;
+            color: #92400e !important;
+            border: 1px solid #fde68a !important;
+        }
+        .alert-danger {
+            background: #fef2f2 !important;
+            color: #991b1b !important;
+            border: 1px solid #fecaca !important;
+        }
+
+        /* ── MODALES ── */
+        .modal-content {
+            border: none !important;
+            border-radius: 20px !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+            overflow: hidden;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 16px 20px !important;
+        }
+        .modal-title {
+            font-weight: 700 !important;
+        }
+        .modal-body {
+            padding: 20px !important;
+            background: #ffffff !important;
+        }
+        .modal-footer {
+            background: #f9fafb !important;
+            border-top: 1px solid #e5e7eb !important;
+            padding: 14px 20px !important;
+        }
+
+        /* ── FOOTER ── */
+        .footer-credits {
+            color: #6b7280 !important;
+            font-size: 0.8rem !important;
+            padding: 16px !important;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 24px;
+        }
+        .footer-credits strong {
+            color: #4f46e5 !important;
+        }
+
+
+        /* ═══ BOUTON HAMBURGER — 3 BARRES NOIRES ═══ */
+        .navbar-toggler {
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 8px !important;
+            padding: 0 !important;
+            width: 46px !important;
+            height: 42px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+            transition: all 0.2s ease !important;
+        }
+        .navbar-toggler:hover {
+            background: #f9fafb !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12) !important;
+        }
+        .navbar-toggler:focus,
+        .navbar-toggler:active {
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+        }
+        .navbar-toggler-icon {
+            background-image: none !important;
+            position: relative !important;
+            width: 24px !important;
+            height: 3px !important;
+            background: #000000 !important;
+            display: block !important;
+            border-radius: 2px !important;
+            box-shadow: 0 -8px 0 #000000, 0 8px 0 #000000 !important;
+        }
+        .navbar-toggler.collapsed .navbar-toggler-icon {
+            box-shadow: 0 -8px 0 #000000, 0 8px 0 #000000 !important;
+        }
+
+        /* ═══ FIN THÈME SOFT MODERN ═══ */
+
     </style>
 </head>
 <body>
