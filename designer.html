@@ -864,6 +864,88 @@
             box-shadow: 0 -8px 0 #000000, 0 8px 0 #000000 !important;
         }
 
+
+        /* ═══ HEADER ENRICHI — Établissement + Année + Horloge ═══ */
+        .header-etab-block {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2px 10px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            border-left: 3px solid #ffffff;
+            min-width: 140px;
+            max-width: 220px;
+            line-height: 1.15;
+        }
+        .header-etab-name {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .header-etab-year {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #e0e7ff;
+            letter-spacing: 0.3px;
+        }
+        .header-center-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            text-align: center;
+        }
+        .header-brand-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            margin: 0;
+            line-height: 1.1;
+        }
+        .header-clock {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #e0e7ff;
+            letter-spacing: 1.5px;
+            margin-top: 2px;
+            padding: 1px 8px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 999px;
+            display: inline-block;
+        }
+
+        /* Responsive : rendre le bloc COMPACT sur mobile (jamais caché) */
+        @media (max-width: 600px) {
+            .header-etab-block {
+                padding: 2px 6px !important;
+                min-width: auto !important;
+                max-width: 130px !important;
+                border-left: 2px solid #ffffff !important;
+            }
+            .header-etab-name {
+                font-size: 0.65rem !important;
+            }
+            .header-etab-year {
+                font-size: 0.58rem !important;
+            }
+            .header-brand-title {
+                font-size: 0.95rem !important;
+            }
+            .header-clock {
+                font-size: 0.62rem !important;
+                padding: 0 6px !important;
+                letter-spacing: 1px !important;
+            }
+        }
+
         /* ═══ FIN THÈME SOFT MODERN ═══ */
 
     </style>
@@ -901,29 +983,29 @@
         </div>
     </div>
 
-    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4">
-        <div class="container d-flex justify-content-between align-items-center">
-            <a class="navbar-brand fw-bold mb-0" href="#" style="color: var(--secondary-color);">DESIGNATEUR 🇧🇯</a>
-            
-            <div class="d-flex align-items-center ms-auto">
-                <span class="badge bg-white p-2 me-2">
-                    📊 Total: <strong id="totalStudentsHeader">0</strong>
-                </span>
-                <span class="badge bg-danger p-2 me-3">
-                    🚫 Absents: <strong id="absentStudentsHeader">0</strong>
-                </span>
+        <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4">
+        <div class="container-fluid d-flex align-items-center gap-2">
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-3">
-                        <li class="nav-item"><a class="nav-link" href="index.html">Accueil</a></li>
-                        <li class="nav-item"><a class="nav-link active" href="designer.html">Désignation</a></li>
-                        <li class="nav-item"><a class="nav-link" href="configuration.html">Configuration</a></li>
-                    </ul>
-                </div>
+            <div class="header-etab-block">
+                <span class="header-etab-name" id="header-etab">Établissement</span>
+                <span class="header-etab-year" id="header-year">Année scolaire</span>
+            </div>
+
+            <div class="header-center-block">
+                <a class="header-brand-title" href="index.html" style="text-decoration:none;">DESIGNATEUR 🇧🇯</a>
+                <span class="header-clock" id="header-clock">--:--:--</span>
+            </div>
+
+            <div class="collapse navbar-collapse flex-grow-0" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="index.html">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="designer.html">Désignation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="configuration.html">Configuration</a></li>
+                </ul>
             </div>
         </div>
     </nav>
@@ -1232,5 +1314,41 @@
         updateClassDropdown();
         updateTotalStudentsHeader();
     </script>
+
+    <script>
+    // ═══ HEADER : Chargement établissement + année + horloge ═══
+    (function() {
+        function chargerHeader() {
+            const etab = localStorage.getItem('etab_name') || 'Établissement';
+            const year = localStorage.getItem('etab_year') || 'Année scolaire';
+            const elEtab = document.getElementById('header-etab');
+            const elYear = document.getElementById('header-year');
+            if (elEtab) elEtab.textContent = etab;
+            if (elYear) elYear.textContent = year;
+        }
+
+        function majHorloge() {
+            const el = document.getElementById('header-clock');
+            if (!el) return;
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            el.textContent = h + ':' + m + ':' + s;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            chargerHeader();
+            majHorloge();
+            setInterval(majHorloge, 1000);
+        });
+
+        // Recharger si changement depuis une autre page
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'etab_name' || e.key === 'etab_year') chargerHeader();
+        });
+    })();
+    </script>
+
 </body>
 </html>

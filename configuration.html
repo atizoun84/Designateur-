@@ -799,6 +799,102 @@
             box-shadow: 0 -8px 0 #000000, 0 8px 0 #000000 !important;
         }
 
+
+        /* ═══ HEADER ENRICHI — Établissement + Année + Horloge ═══ */
+        .header-etab-block {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2px 10px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            border-left: 3px solid #ffffff;
+            min-width: 140px;
+            max-width: 220px;
+            line-height: 1.15;
+        }
+        .header-etab-name {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .header-etab-year {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #e0e7ff;
+            letter-spacing: 0.3px;
+        }
+        .header-center-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            text-align: center;
+        }
+        .header-brand-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            margin: 0;
+            line-height: 1.1;
+        }
+        .header-clock {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #e0e7ff;
+            letter-spacing: 1.5px;
+            margin-top: 2px;
+            padding: 1px 8px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 999px;
+            display: inline-block;
+        }
+
+        /* Responsive : rendre le bloc COMPACT sur mobile (jamais caché) */
+        @media (max-width: 600px) {
+            .header-etab-block {
+                padding: 2px 6px !important;
+                min-width: auto !important;
+                max-width: 130px !important;
+                border-left: 2px solid #ffffff !important;
+            }
+            .header-etab-name {
+                font-size: 0.65rem !important;
+            }
+            .header-etab-year {
+                font-size: 0.58rem !important;
+            }
+            .header-brand-title {
+                font-size: 0.95rem !important;
+            }
+            .header-clock {
+                font-size: 0.62rem !important;
+                padding: 0 6px !important;
+                letter-spacing: 1px !important;
+            }
+        }
+
+
+        /* ═══ CHAMPS VERROUILLÉS (Établissement + Année) ═══ */
+        .etab-locked {
+            background: #eef2ff !important;
+            color: #1e3a8a !important;
+            font-weight: 800 !important;
+            border: 2px solid #6366f1 !important;
+            cursor: not-allowed !important;
+        }
+        .etab-locked:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
         /* ═══ FIN THÈME SOFT MODERN ═══ */
 
     </style>
@@ -851,25 +947,63 @@
         </div>
     </div>
 
-    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4">
-        <div class="container d-flex justify-content-between align-items-center">
-            <a class="navbar-brand fw-bold mb-0" href="index.html" style="color: var(--secondary-color);">DESIGNATEUR 🇧🇯</a>
-            
+        <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-4">
+        <div class="container-fluid d-flex align-items-center gap-2">
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="header-etab-block">
+                <span class="header-etab-name" id="header-etab">Établissement</span>
+                <span class="header-etab-year" id="header-year">Année scolaire</span>
+            </div>
+
+            <div class="header-center-block">
+                <a class="header-brand-title" href="index.html" style="text-decoration:none;">DESIGNATEUR 🇧🇯</a>
+                <span class="header-clock" id="header-clock">--:--:--</span>
+            </div>
+
+            <div class="collapse navbar-collapse flex-grow-0" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.html">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="index.html">Accueil</a></li>
                     <li class="nav-item"><a class="nav-link" href="designer.html">Désignation</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="configuration.html">Configuration</a></li>
+                    <li class="nav-item"><a class="nav-link" href="configuration.html">Configuration</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
     <div class="container">
+
+        <!-- ═══ BLOC INFORMATIONS ÉTABLISSEMENT ═══ -->
+        <div class="card shadow-sm mb-4" style="border-top: 4px solid #6366f1;">
+            <div class="card-header text-white fw-bold" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+                🏫 Informations de l'établissement
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Nom de l'établissement :</label>
+                        <input type="text" id="etabNameInput" class="form-control"
+                               placeholder="Ex: CEG GAMIA" maxlength="60">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Année scolaire :</label>
+                        <input type="text" id="etabYearInput" class="form-control"
+                               placeholder="Ex: 2026-2027" maxlength="20">
+                    </div>
+                    <div class="col-12">
+                        <button id="etabBtn" class="btn btn-primary fw-bold w-100">
+                            💾 Enregistrer les informations
+                        </button>
+                        <div id="etabStatus" class="text-center mt-2" style="min-height: 20px;"></div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-md-5">
                 <div class="card shadow-sm mb-4">
@@ -1191,5 +1325,156 @@
             renderClasses();
         };
     </script>
+
+    
+
+
+    
+
+
+    <script>
+    // ═══════════════════════════════════════════════════════
+    //  SCRIPT UNIFIÉ : HEADER + CONFIGURATION ÉTABLISSEMENT
+    // ═══════════════════════════════════════════════════════
+
+    let estVerrouille = false;
+
+    // ─── Mise à jour du header ───
+    function majHeader() {
+        const name = localStorage.getItem('etab_name') || 'Établissement';
+        const year = localStorage.getItem('etab_year') || 'Année scolaire';
+
+        const elEtab = document.getElementById('header-etab');
+        const elYear = document.getElementById('header-year');
+        if (elEtab) elEtab.textContent = name;
+        if (elYear) elYear.textContent = year;
+    }
+
+    // ─── Horloge ───
+    function majHorloge() {
+        const el = document.getElementById('header-clock');
+        if (!el) return;
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const s = String(now.getSeconds()).padStart(2, '0');
+        el.textContent = h + ':' + m + ':' + s;
+    }
+
+    // ─── Verrouillage des champs ───
+    function verrouiller(name, year) {
+        const nameInput = document.getElementById('etabNameInput');
+        const yearInput = document.getElementById('etabYearInput');
+        const btn = document.getElementById('etabBtn');
+        if (!nameInput || !yearInput || !btn) return;
+
+        nameInput.value = name;
+        yearInput.value = year;
+        nameInput.readOnly = true;
+        yearInput.readOnly = true;
+        nameInput.classList.add('etab-locked');
+        yearInput.classList.add('etab-locked');
+
+        btn.innerHTML = '🔓 Déverrouiller pour modifier';
+        btn.className = 'btn btn-danger fw-bold w-100';
+        btn.onclick = deverrouiller;
+        estVerrouille = true;
+    }
+
+    function deverrouiller() {
+        const nameInput = document.getElementById('etabNameInput');
+        const yearInput = document.getElementById('etabYearInput');
+        const btn = document.getElementById('etabBtn');
+        if (!nameInput || !yearInput || !btn) return;
+
+        nameInput.readOnly = false;
+        yearInput.readOnly = false;
+        nameInput.classList.remove('etab-locked');
+        yearInput.classList.remove('etab-locked');
+
+        btn.innerHTML = '💾 Enregistrer les informations';
+        btn.className = 'btn btn-primary fw-bold w-100';
+        btn.onclick = sauvegarder;
+        estVerrouille = false;
+        nameInput.focus();
+    }
+
+    // ─── Sauvegarde ───
+    function sauvegarder() {
+        const nameInput = document.getElementById('etabNameInput');
+        const yearInput = document.getElementById('etabYearInput');
+        const status = document.getElementById('etabStatus');
+        if (!nameInput || !yearInput) return;
+
+        const name = nameInput.value.trim();
+        let year = yearInput.value.trim();
+
+        if (!name) {
+            if (status) status.innerHTML = '<span class="text-danger fw-bold">⚠️ Le nom est obligatoire</span>';
+            return;
+        }
+
+        // Auto-complétion année
+        if (/^\d{4}$/.test(year)) {
+            year = year + '-' + (parseInt(year) + 1);
+            yearInput.value = year;
+        }
+
+        localStorage.setItem('etab_name', name);
+        localStorage.setItem('etab_year', year || 'Année scolaire');
+
+        // Mise à jour HEADER immédiate
+        majHeader();
+
+        if (status) status.innerHTML = '<span class="text-success fw-bold">✅ Informations enregistrées !</span>';
+
+        // Verrouillage
+        verrouiller(name, year || 'Année scolaire');
+
+        setTimeout(() => { if (status) status.innerHTML = ''; }, 3000);
+    }
+
+    // ─── Initialisation ───
+    function initAll() {
+        // 1. Charger le header (nom établissement + année)
+        majHeader();
+
+        // 2. Démarrer l'horloge
+        majHorloge();
+        setInterval(majHorloge, 1000);
+
+        // 3. Configurer le formulaire de configuration (si présent)
+        const nameInput = document.getElementById('etabNameInput');
+        const yearInput = document.getElementById('etabYearInput');
+        const btn = document.getElementById('etabBtn');
+
+        if (nameInput && yearInput && btn) {
+            const savedName = localStorage.getItem('etab_name');
+            const savedYear = localStorage.getItem('etab_year');
+
+            if (savedName) {
+                verrouiller(savedName, savedYear || 'Année scolaire');
+            } else {
+                btn.onclick = sauvegarder;
+            }
+
+            // Auto-complétion pendant la saisie
+            yearInput.addEventListener('input', function() {
+                if (/^\d{4}$/.test(this.value)) {
+                    this.value = this.value + '-' + (parseInt(this.value) + 1);
+                }
+            });
+        }
+    }
+
+    // Lancer dès que le DOM est prêt
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAll);
+    } else {
+        initAll();
+    }
+    </script>
+
+
 </body>
 </html>
