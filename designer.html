@@ -980,6 +980,7 @@
                 </button>
             </div>
             
+            <button onclick="deleteStudent()" class="btn btn-danger w-100 fw-bold mb-2" style="border-radius: 12px;">🗑️ Supprimer l'élève</button>
             <button onclick="closeModal()" class="btn btn-outline-light w-100 fw-bold" style="border-radius: 12px; border-color: #555;">Fermer</button>
         </div>
     </div>
@@ -1253,6 +1254,18 @@
             }
         }
 
+        function deleteStudent() {
+            const name = document.getElementById('winner-name').innerText;
+            if(!currentClass) return;
+            const student = currentClass.students.find(s => s.name.trim() === name);
+            if(!student) return;
+            if(confirm(`Supprimer définitivement ${name} de la classe ?`)) {
+                currentClass.students = currentClass.students.filter(s => s.name.trim() !== name);
+                saveData();
+                loadClassData();
+                closeModal();
+            }
+        }
         function resetSession() {
             if(!currentClass) return;
             if(confirm("Réinitialiser le cycle ? Tous les élèves (y compris absents) reviendront dans la liste.")) {
